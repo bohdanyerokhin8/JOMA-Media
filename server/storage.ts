@@ -91,7 +91,7 @@ export class DatabaseStorage implements IStorage {
   async updatePaymentRequestStatus(id: string, status: string, adminNotes?: string): Promise<PaymentRequest> {
     const [request] = await db
       .update(paymentRequests)
-      .set({ status, adminNotes, updatedAt: new Date() })
+      .set({ status: status as any, adminNotes, updatedAt: new Date() })
       .where(eq(paymentRequests.id, id))
       .returning();
     return request;
@@ -125,7 +125,7 @@ export class DatabaseStorage implements IStorage {
   async updateWorkItemStatus(id: string, status: string): Promise<WorkItem> {
     const [item] = await db
       .update(workItems)
-      .set({ status, updatedAt: new Date() })
+      .set({ status: status as any, updatedAt: new Date() })
       .where(eq(workItems.id, id))
       .returning();
     return item;

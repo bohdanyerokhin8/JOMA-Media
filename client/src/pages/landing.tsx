@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Star, Briefcase, Loader2 } from "lucide-react";
+import { Users, Star, Briefcase, Loader2, Mail, Lock, User, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Landing() {
@@ -30,11 +30,11 @@ export default function Landing() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <Card className="p-6">
-          <CardContent className="flex items-center space-x-3 pt-6">
-            <Loader2 className="animate-spin h-6 w-6 text-primary" />
-            <span className="text-gray-700">Authenticating...</span>
+      <div className="fixed inset-0 bg-white bg-opacity-95 flex items-center justify-center z-50">
+        <Card className="p-8 shadow-lg">
+          <CardContent className="flex flex-col items-center space-y-4 pt-6">
+            <Loader2 className="animate-spin h-8 w-8 text-primary" />
+            <span className="text-gray-700 font-medium">Connecting to Google...</span>
           </CardContent>
         </Card>
       </div>
@@ -42,38 +42,46 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="bg-primary w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg">
               <Users className="text-white h-8 w-8" />
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Welcome to JOMA Media
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            JOMA Media
+          </h1>
+          <p className="text-lg text-gray-600 mb-2">
+            Influencer Management Platform
+          </p>
+          <p className="text-sm text-gray-500">
             Connect with brands and manage your influencer career
           </p>
         </div>
 
         {/* Authentication Card */}
-        <Card className="shadow-xl rounded-2xl">
+        <Card className="shadow-2xl rounded-2xl border-0">
           <CardContent className="p-8">
             <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-100 rounded-lg p-1">
+                <TabsTrigger value="signin" className="rounded-md">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-md">Sign Up</TabsTrigger>
               </TabsList>
 
               {/* Sign In Form */}
               <TabsContent value="signin" className="space-y-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">Welcome Back</h2>
+                  <p className="text-gray-600">Sign in to your account</p>
+                </div>
+
                 <Button
                   onClick={handleGoogleAuth}
                   variant="outline"
-                  className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                  className="w-full flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
                 >
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -89,51 +97,57 @@ export default function Landing() {
                     <div className="w-full border-t border-gray-300"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-600">Or continue with email</span>
+                    <span className="px-4 bg-white text-gray-500">Or continue with email</span>
                   </div>
                 </div>
 
                 <form className="space-y-4" onSubmit={handleEmailAuth}>
                   <div>
-                    <Label htmlFor="email">Email address</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      className="mt-1"
-                      placeholder="Enter your email"
-                    />
+                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email address</Label>
+                    <div className="mt-1 relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Enter your email"
+                      />
+                    </div>
                   </div>
                   
                   <div>
-                    <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                      className="mt-1"
-                      placeholder="Enter your password"
-                    />
+                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
+                    <div className="mt-1 relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Enter your password"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Checkbox id="remember" />
-                      <Label htmlFor="remember" className="text-sm">
+                      <Label htmlFor="remember" className="text-sm text-gray-600">
                         Remember me
                       </Label>
                     </div>
                     <button
                       type="button"
-                      className="text-sm font-medium text-primary hover:text-blue-500 transition-colors duration-200"
+                      className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
                     >
                       Forgot password?
                     </button>
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200">
                     Sign in
                   </Button>
                 </form>
@@ -141,10 +155,15 @@ export default function Landing() {
 
               {/* Sign Up Form */}
               <TabsContent value="signup" className="space-y-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900 mb-2">Create Account</h2>
+                  <p className="text-gray-600">Join JOMA Media today</p>
+                </div>
+
                 <Button
                   onClick={handleGoogleAuth}
                   variant="outline"
-                  className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                  className="w-full flex items-center justify-center py-3 px-4 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
                 >
                   <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -160,25 +179,25 @@ export default function Landing() {
                     <div className="w-full border-t border-gray-300"></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-600">Or create account with email</span>
+                    <span className="px-4 bg-white text-gray-500">Or create account with email</span>
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">I am a</Label>
-                  <RadioGroup value={selectedRole} onValueChange={setSelectedRole} className="grid grid-cols-2 gap-3 mt-2">
-                    <div className="flex items-center space-x-2">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <Label className="text-sm font-medium text-gray-700 mb-3 block">I am a</Label>
+                  <RadioGroup value={selectedRole} onValueChange={setSelectedRole} className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-white transition-colors">
                       <RadioGroupItem value="influencer" id="influencer" />
                       <Label htmlFor="influencer" className="flex items-center space-x-2 cursor-pointer">
-                        <Star className="h-4 w-4 text-primary" />
-                        <span>Influencer</span>
+                        <Star className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium">Influencer</span>
                       </Label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-white transition-colors">
                       <RadioGroupItem value="admin" id="admin" />
                       <Label htmlFor="admin" className="flex items-center space-x-2 cursor-pointer">
-                        <Briefcase className="h-4 w-4 text-gray-600" />
-                        <span>Admin</span>
+                        <Shield className="h-4 w-4 text-gray-600" />
+                        <span className="font-medium">Admin</span>
                       </Label>
                     </div>
                   </RadioGroup>
@@ -187,76 +206,88 @@ export default function Landing() {
                 <form className="space-y-4" onSubmit={handleEmailAuth}>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="first-name">First name</Label>
-                      <Input
-                        id="first-name"
-                        name="first-name"
-                        type="text"
-                        required
-                        className="mt-1"
-                        placeholder="John"
-                      />
+                      <Label htmlFor="first-name" className="text-sm font-medium text-gray-700">First name</Label>
+                      <div className="mt-1 relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <Input
+                          id="first-name"
+                          name="first-name"
+                          type="text"
+                          required
+                          className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="John"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <Label htmlFor="last-name">Last name</Label>
+                      <Label htmlFor="last-name" className="text-sm font-medium text-gray-700">Last name</Label>
+                      <div className="mt-1 relative">
+                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <Input
+                          id="last-name"
+                          name="last-name"
+                          type="text"
+                          required
+                          className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="Doe"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="signup-email" className="text-sm font-medium text-gray-700">Email address</Label>
+                    <div className="mt-1 relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
-                        id="last-name"
-                        name="last-name"
-                        type="text"
+                        id="signup-email"
+                        name="email"
+                        type="email"
                         required
-                        className="mt-1"
-                        placeholder="Doe"
+                        className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Enter your email"
                       />
                     </div>
                   </div>
                   
                   <div>
-                    <Label htmlFor="signup-email">Email address</Label>
-                    <Input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      required
-                      className="mt-1"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="signup-password">Password</Label>
-                    <Input
-                      id="signup-password"
-                      name="password"
-                      type="password"
-                      required
-                      className="mt-1"
-                      placeholder="Create a password"
-                    />
+                    <Label htmlFor="signup-password" className="text-sm font-medium text-gray-700">Password</Label>
+                    <div className="mt-1 relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Input
+                        id="signup-password"
+                        name="password"
+                        type="password"
+                        required
+                        className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Create a password"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
                     <Checkbox id="terms" required />
-                    <Label htmlFor="terms" className="text-sm">
+                    <Label htmlFor="terms" className="text-sm text-gray-600">
                       I agree to the{" "}
-                      <button type="button" className="text-primary hover:text-blue-500">
+                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
                         Terms of Service
                       </button>{" "}
                       and{" "}
-                      <button type="button" className="text-primary hover:text-blue-500">
+                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
                         Privacy Policy
                       </button>
                     </Label>
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200">
                     Create account
                   </Button>
                 </form>
               </TabsContent>
             </Tabs>
 
-            <div className="text-center pt-4">
-              <p className="text-xs text-gray-600">
+            <div className="text-center pt-6 mt-6 border-t border-gray-200">
+              <p className="text-xs text-gray-500">
                 © 2024 JOMA Media. All rights reserved.
               </p>
             </div>
