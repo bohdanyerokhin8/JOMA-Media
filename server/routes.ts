@@ -23,6 +23,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Login endpoint
+  app.post('/auth/login', async (req, res) => {
+    try {
+      const { loginUser } = await import('./auth');
+      const user = await loginUser(req.body);
+      
+      // Set up session
+      req.session.user = user;
+      
+      res.json({ message: 'Login successful', user });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(401).json({ message: (error as Error).message });
+    }
+  });
+
+  // Get current user endpoint
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Logout endpoint
+  app.post('/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+
   // Payment Request routes
   app.post('/api/payment-requests', isAuthenticated, async (req: any, res) => {
     try {

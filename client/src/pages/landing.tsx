@@ -29,28 +29,16 @@ export default function Landing() {
     const formData = new FormData(form);
     
     try {
-      const response = await apiRequest("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          email: formData.get("email"),
-          password: formData.get("password"),
-        }),
+      const response = await apiRequest("POST", "/auth/login", {
+        email: formData.get("email"),
+        password: formData.get("password"),
       });
       
-      if (response.ok) {
-        window.location.href = "/";
-      } else {
-        const error = await response.json();
-        toast({
-          title: "Login Failed",
-          description: error.message || "Invalid email or password",
-          variant: "destructive",
-        });
-      }
+      window.location.href = "/";
     } catch (error) {
       toast({
         title: "Login Failed",
-        description: "An error occurred. Please try again.",
+        description: error instanceof Error ? error.message : "An error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -66,37 +54,25 @@ export default function Landing() {
     const formData = new FormData(form);
     
     try {
-      const response = await apiRequest("/auth/register", {
-        method: "POST",
-        body: JSON.stringify({
-          email: formData.get("email"),
-          password: formData.get("password"),
-          firstName: formData.get("firstName"),
-          lastName: formData.get("lastName"),
-          role: selectedRole,
-        }),
+      const response = await apiRequest("POST", "/auth/register", {
+        email: formData.get("email"),
+        password: formData.get("password"),
+        firstName: formData.get("firstName"),
+        lastName: formData.get("lastName"),
+        role: selectedRole,
       });
       
-      if (response.ok) {
-        toast({
-          title: "Registration Successful",
-          description: "You can now log in with your new account",
-          variant: "default",
-        });
-        // Switch to login tab
-        document.querySelector('[data-value="login"]')?.click();
-      } else {
-        const error = await response.json();
-        toast({
-          title: "Registration Failed",
-          description: error.message || "Failed to create account",
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: "Registration Successful",
+        description: "You can now log in with your new account",
+        variant: "default",
+      });
+      // Switch to login tab
+      document.querySelector('[data-value="signin"]')?.click();
     } catch (error) {
       toast({
         title: "Registration Failed",
-        description: "An error occurred. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create account",
         variant: "destructive",
       });
     } finally {
