@@ -6,11 +6,12 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
-- **Phase 1 Complete (Jan 2025)**: Set up authentication system with Google OAuth via Replit
+- **Phase 1 Complete (Jan 2025)**: Set up authentication system with Google OAuth via Cloudflare Access
 - **Database Schema**: Created complete data model with users, payment requests, work items, and influencer profiles
-- **Landing Page**: Built comprehensive sign-in/sign-up page with Google authentication
+- **Landing Page**: Built comprehensive sign-in/sign-up page with Cloudflare Access integration
 - **Homepage**: Created role-based dashboard for influencers and admins
 - **API Routes**: Implemented all core backend endpoints for data management
+- **Authentication Migration**: Migrated from Replit Auth to Cloudflare Access for enhanced security
 
 ## User Preferences
 
@@ -40,10 +41,11 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Authentication System
-- **Provider**: Replit Auth with OIDC
+- **Provider**: Cloudflare Access with Google OAuth 2.0
 - **Session Storage**: PostgreSQL-backed sessions using `connect-pg-simple`
 - **User Roles**: Two-tier system (influencer/admin)
-- **Security**: HTTP-only cookies with secure flags
+- **Security**: JWT-based authentication via Cloudflare Access headers
+- **Flow**: Users authenticate through Cloudflare Access gateway, JWT tokens passed via headers
 
 ### Data Models
 - **Users**: Core user information with role-based access
