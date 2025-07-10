@@ -118,9 +118,17 @@ export function setupAuthRoutes(app: Express) {
   });
 
   // Get current user
-  app.get('/api/auth/user', (req, res) => {
+  app.get('/api/auth/user', async (req, res) => {
     if (req.user) {
-      res.json(req.user);
+      try {
+        // Get full user data from database
+        const { storage } = await import('./storage');
+        const user = await storage.getUser(req.user.id);
+        res.json(user);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ message: "Failed to fetch user" });
+      }
     } else {
       res.status(401).json({ message: 'Unauthorized' });
     }

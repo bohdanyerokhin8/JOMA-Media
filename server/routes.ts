@@ -35,46 +35,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Login endpoint
-  app.post('/auth/login', async (req, res) => {
-    try {
-      const { loginUser } = await import('./auth');
-      const user = await loginUser(req.body);
-      
-      // Set up session
-      req.session.user = user;
-      
-      res.json({ message: 'Login successful', user });
-    } catch (error) {
-      console.error("Login error:", error);
-      
-      // Return specific error message from auth logic
-      const errorMessage = (error as Error).message;
-      
-      // Determine appropriate status code based on error type
-      let statusCode = 401;
-      if (errorMessage.includes("No account found")) {
-        statusCode = 404;
-      } else if (errorMessage.includes("Google sign-in")) {
-        statusCode = 400;
-      } else if (errorMessage.includes("contact support")) {
-        statusCode = 403;
-      }
-      
-      res.status(statusCode).json({ message: errorMessage });
-    }
-  });
+  // Login endpoint - handled by passport in googleAuth.ts
 
-  // Get current user endpoint
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const user = await storage.getUser(req.user.id);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Get current user endpoint - handled by passport in googleAuth.ts
 
   // Logout endpoint
   app.post('/auth/logout', (req, res) => {
