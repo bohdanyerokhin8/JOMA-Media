@@ -134,9 +134,9 @@ export function createSessionUser(user: AuthUser): any {
   };
 }
 
-export function isAuthenticated(req: express.Request, res: express.Response, next: express.NextFunction) {
-  if (req.session && (req.session as any).user) {
-    req.user = (req.session as any).user;
+export function isAuthenticated(req: any, res: express.Response, next: express.NextFunction) {
+  if (req.session && req.session.user) {
+    req.user = req.session.user;
     return next();
   }
   
