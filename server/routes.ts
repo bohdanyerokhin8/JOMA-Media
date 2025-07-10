@@ -88,6 +88,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Logout redirect endpoint (for direct navigation)
+  app.get('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+      }
+      res.clearCookie('connect.sid');
+      res.redirect('/');
+    });
+  });
+
   // Payment Request routes
   app.post('/api/payment-requests', isAuthenticated, async (req: any, res) => {
     try {

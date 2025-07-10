@@ -51,8 +51,20 @@ export default function Home() {
     return null;
   }
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    try {
+      await fetch('/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      // Redirect to sign-in page
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Fallback: redirect anyway to clear the session
+      window.location.href = "/";
+    }
   };
 
   const getInitials = (firstName?: string, lastName?: string) => {
