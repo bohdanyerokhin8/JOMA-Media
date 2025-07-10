@@ -86,9 +86,9 @@ export default function Landing() {
       });
       
       toast({
-        title: "Registration Successful",
-        description: "You can now log in with your new account",
-        variant: "default",
+        title: "Account created successfully",
+        description: "You can now sign in with your new account",
+        variant: "success" as any,
       });
       // Switch to login tab
       document.querySelector('[data-value="signin"]')?.click();
