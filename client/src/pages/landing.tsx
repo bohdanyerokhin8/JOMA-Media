@@ -36,10 +36,24 @@ export default function Landing() {
       
       window.location.href = "/";
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An error occurred. Please try again.";
+      
+      // Customize toast variant based on error type
+      let variant: "default" | "destructive" = "destructive";
+      let title = "Sign In Failed";
+      
+      if (errorMessage.includes("No account found")) {
+        title = "Account Not Found";
+        variant = "default";
+      } else if (errorMessage.includes("Google sign-in")) {
+        title = "Wrong Sign-In Method";
+        variant = "default";
+      }
+      
       toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : "An error occurred. Please try again.",
-        variant: "destructive",
+        title,
+        description: errorMessage,
+        variant,
       });
     } finally {
       setIsLoading(false);
@@ -70,10 +84,24 @@ export default function Landing() {
       // Switch to login tab
       document.querySelector('[data-value="signin"]')?.click();
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to create account";
+      
+      // Customize toast variant based on error type
+      let variant: "default" | "destructive" = "destructive";
+      let title = "Registration Failed";
+      
+      if (errorMessage.includes("already exists")) {
+        title = "Account Already Exists";
+        variant = "default";
+      } else if (errorMessage.includes("Google sign-in")) {
+        title = "Account Exists with Google";
+        variant = "default";
+      }
+      
       toast({
-        title: "Registration Failed",
-        description: error instanceof Error ? error.message : "Failed to create account",
-        variant: "destructive",
+        title,
+        description: errorMessage,
+        variant,
       });
     } finally {
       setIsLoading(false);

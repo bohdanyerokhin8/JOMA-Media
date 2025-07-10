@@ -20,7 +20,11 @@ export async function registerUser(userData: any): Promise<AuthUser> {
   // Check if user already exists
   const existingUser = await storage.getUserByEmail(validatedData.email);
   if (existingUser) {
-    throw new Error("User already exists with this email");
+    if (existingUser.authProvider === "google") {
+      throw new Error("An account with this email already exists using Google sign-in. Please use the 'Sign in with Google' button to access your account.");
+    } else {
+      throw new Error("An account with this email already exists. Please sign in instead or use a different email address.");
+    }
   }
 
   // Hash password
@@ -54,18 +58,28 @@ export async function loginUser(credentials: any): Promise<AuthUser> {
   
   // Find user by email
   const user = await storage.getUserByEmail(validatedData.email);
-  if (!user || !user.hashedPassword) {
-    throw new Error("Invalid email or password");
+  if (!user) {
+    throw new Error("No account found with this email address. Please check your email or create a new account.");
+  }
+
+  // Check if user registered with Google OAuth (no password)
+  if (!user.hashedPassword && user.authProvider === "google") {
+    throw new Error("This account was created with Google sign-in. Please use the 'Sign in with Google' button instead.");
+  }
+
+  // Check if user has password but it's null (shouldn't happen but safety check)
+  if (!user.hashedPassword) {
+    throw new Error("Password authentication is not set up for this account. Please contact support.");
   }
 
   // Verify password
   const isValidPassword = await bcrypt.compare(validatedData.password, user.hashedPassword);
   if (!isValidPassword) {
-    throw new Error("Invalid email or password");
+    throw new Error("Incorrect password. Please check your password and try again.");
   }
 
   if (!user.isActive) {
-    throw new Error("Account is deactivated");
+    throw new Error("Your account has been deactivated. Please contact support to reactivate your account.");
   }
 
   return {

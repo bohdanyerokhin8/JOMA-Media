@@ -16,10 +16,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/auth/register', async (req, res) => {
     try {
       const user = await registerUser(req.body);
-      res.status(201).json({ message: 'User registered successfully', user });
+      res.status(201).json({ message: 'Account created successfully! You can now sign in with your email and password.', user });
     } catch (error) {
       console.error("Registration error:", error);
-      res.status(400).json({ message: (error as Error).message });
+      
+      // Return specific error message from auth logic
+      const errorMessage = (error as Error).message;
+      
+      // Determine appropriate status code based on error type
+      let statusCode = 400;
+      if (errorMessage.includes("Google sign-in")) {
+        statusCode = 409; // Conflict - account exists with different provider
+      } else if (errorMessage.includes("already exists")) {
+        statusCode = 409; // Conflict - account exists
+      }
+      
+      res.status(statusCode).json({ message: errorMessage });
     }
   });
 
@@ -35,7 +47,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: 'Login successful', user });
     } catch (error) {
       console.error("Login error:", error);
-      res.status(401).json({ message: (error as Error).message });
+      
+      // Return specific error message from auth logic
+      const errorMessage = (error as Error).message;
+      
+      // Determine appropriate status code based on error type
+      let statusCode = 401;
+      if (errorMessage.includes("No account found")) {
+        statusCode = 404;
+      } else if (errorMessage.includes("Google sign-in")) {
+        statusCode = 400;
+      } else if (errorMessage.includes("contact support")) {
+        statusCode = 403;
+      }
+      
+      res.status(statusCode).json({ message: errorMessage });
     }
   });
 
