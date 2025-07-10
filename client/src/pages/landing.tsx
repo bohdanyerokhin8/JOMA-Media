@@ -38,23 +38,32 @@ export default function Landing() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An error occurred. Please try again.";
       
-      // Customize toast variant based on error type
-      let variant: "default" | "destructive" = "destructive";
-      let title = "Sign In Failed";
-      
+      // Simple, clean notifications
       if (errorMessage.includes("No account found")) {
-        title = "Account Not Found";
-        variant = "default";
+        toast({
+          title: "Account not found",
+          description: "Please check your email or create a new account.",
+          variant: "default",
+        });
       } else if (errorMessage.includes("Google sign-in")) {
-        title = "Wrong Sign-In Method";
-        variant = "default";
+        toast({
+          title: "Use Google sign-in",
+          description: "This account was created with Google. Please use the Google sign-in button.",
+          variant: "default",
+        });
+      } else if (errorMessage.includes("Incorrect password")) {
+        toast({
+          title: "Incorrect password",
+          description: "Please check your password and try again.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Sign in failed",
+          description: "Please try again or contact support if the problem persists.",
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title,
-        description: errorMessage,
-        variant,
-      });
     } finally {
       setIsLoading(false);
     }
@@ -86,44 +95,48 @@ export default function Landing() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create account";
       
-      // Customize toast variant based on error type
-      let variant: "default" | "destructive" = "destructive";
-      let title = "Registration Failed";
-      
-      if (errorMessage.includes("already exists")) {
-        title = "Account Already Exists";
-        variant = "default";
-      } else if (errorMessage.includes("Google sign-in")) {
-        title = "Account Exists with Google";
-        variant = "default";
+      // Simple, clean notifications
+      if (errorMessage.includes("already exists") && errorMessage.includes("Google sign-in")) {
+        toast({
+          title: "Account exists with Google",
+          description: "Please use the Google sign-in button to access your account.",
+          variant: "default",
+        });
+      } else if (errorMessage.includes("already exists")) {
+        toast({
+          title: "Account already exists",
+          description: "Please sign in instead or use a different email address.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Registration failed",
+          description: "Please try again or contact support if the problem persists.",
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title,
-        description: errorMessage,
-        variant,
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-white bg-opacity-95 flex items-center justify-center z-50">
-        <Card className="p-8 shadow-lg">
-          <CardContent className="flex flex-col items-center space-y-4 pt-6">
-            <Loader2 className="animate-spin h-8 w-8 text-primary" />
-            <span className="text-gray-700 font-medium">Redirecting to secure authentication...</span>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  // Loading overlay component
+  const LoadingOverlay = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <Card className="p-8 shadow-lg">
+        <CardContent className="flex flex-col items-center space-y-4 pt-6">
+          <Loader2 className="animate-spin h-8 w-8 text-primary" />
+          <span className="text-gray-700 font-medium">Processing...</span>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <>
+      {isLoading && <LoadingOverlay />}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
@@ -372,7 +385,8 @@ export default function Landing() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
