@@ -35,6 +35,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset password endpoint (for development/testing)
+  app.post('/auth/reset-password', async (req, res) => {
+    try {
+      const { email, newPassword } = req.body;
+      
+      if (!email || !newPassword) {
+        return res.status(400).json({ message: 'Email and new password are required' });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Hash the new password
+      const bcrypt = await import('bcryptjs');
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      
+      // Update the user's password
+      await storage.upsertUser({
+        ...user,
+        hashedPassword,
+        updatedAt: new Date(),
+      });
+
+      res.json({ message: 'Password reset successfully' });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ message: 'Failed to reset password' });
+    }
+  });
+
   // Login endpoint - handled by passport in googleAuth.ts
 
   // Get current user endpoint - handled by passport in googleAuth.ts
