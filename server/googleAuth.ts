@@ -8,6 +8,9 @@ import connectPg from "connect-pg-simple";
 
 // Session setup
 export function setupSession(app: Express) {
+  // Trust proxy for HTTPS forwarding - required for secure cookies behind proxy
+  app.set('trust proxy', 1);
+  
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
@@ -17,17 +20,30 @@ export function setupSession(app: Express) {
     tableName: "sessions",
   });
 
-  app.use(session({
+  // Configure session with production-optimized settings
+  const sessionConfig = {
     secret: process.env.SESSION_SECRET || "your-secret-key-here",
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    name: 'joma.session.id', // Custom session name
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: sessionTtl,
+      sameSite: "lax" as const,
+      path: '/',
     },
-  }));
+  };
+
+  // In production, ensure secure cookie configuration
+  if (process.env.NODE_ENV === "production") {
+    sessionConfig.cookie.secure = true;
+    // Allow cookies to work across subdomains
+    sessionConfig.cookie.domain = process.env.COOKIE_DOMAIN || undefined;
+  }
+
+  app.use(session(sessionConfig));
 }
 
 // Passport configuration
