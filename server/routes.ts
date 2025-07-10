@@ -1,30 +1,32 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./cloudflareAuth";
-import { insertPaymentRequestSchema, insertWorkItemSchema, insertInfluencerProfileSchema } from "@shared/schema";
+import { setupSession, setupPassport, setupAuthRoutes } from "./googleAuth";
+import { registerUser, isAuthenticated } from "./auth";
+import { insertPaymentRequestSchema, insertWorkItemSchema, insertInfluencerProfileSchema, registerUserSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Auth middleware
-  await setupAuth(app);
+  // Setup session and passport
+  setupSession(app);
+  setupPassport(app);
+  setupAuthRoutes(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Registration endpoint
+  app.post('/auth/register', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
+      const user = await registerUser(req.body);
+      res.status(201).json({ message: 'User registered successfully', user });
     } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+      console.error("Registration error:", error);
+      res.status(400).json({ message: (error as Error).message });
     }
   });
 
   // Payment Request routes
   app.post('/api/payment-requests', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const requestData = insertPaymentRequestSchema.parse({ ...req.body, userId });
       const paymentRequest = await storage.createPaymentRequest(requestData);
       res.json(paymentRequest);
@@ -36,7 +38,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/payment-requests', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const paymentRequests = await storage.getPaymentRequestsByUser(userId);
       res.json(paymentRequests);
     } catch (error) {
@@ -49,9 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { status, adminNotes } = req.body;
-      const user = await storage.getUser(req.user.claims.sub);
       
-      if (user?.role !== 'admin') {
+      if (req.user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -66,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Work Item routes
   app.post('/api/work-items', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const itemData = insertWorkItemSchema.parse({ ...req.body, userId });
       const workItem = await storage.createWorkItem(itemData);
       res.json(workItem);
@@ -78,7 +79,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/work-items', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const workItems = await storage.getWorkItemsByUser(userId);
       res.json(workItems);
     } catch (error) {
@@ -102,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Influencer Profile routes
   app.post('/api/influencer-profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const profileData = insertInfluencerProfileSchema.parse({ ...req.body, userId });
       const profile = await storage.createInfluencerProfile(profileData);
       res.json(profile);
@@ -114,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/influencer-profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const profile = await storage.getInfluencerProfileByUser(userId);
       res.json(profile);
     } catch (error) {
@@ -125,7 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch('/api/influencer-profile', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const profile = await storage.updateInfluencerProfile(userId, req.body);
       res.json(profile);
     } catch (error) {
@@ -137,9 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   app.get('/api/admin/influencers', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
-      
-      if (user?.role !== 'admin') {
+      if (req.user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 

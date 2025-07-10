@@ -23,7 +23,7 @@ export const sessions = pgTable(
 );
 
 // User storage table.
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+// (IMPORTANT) This table is mandatory for authentication, don't drop it.
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
@@ -32,6 +32,10 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role", { enum: ["influencer", "admin"] }).default("influencer"),
   isActive: boolean("is_active").default(true),
+  // Password-based authentication fields
+  hashedPassword: varchar("hashed_password"), // For email/password users
+  authProvider: varchar("auth_provider", { enum: ["email", "google"] }).default("email"), // Track auth method
+  googleId: varchar("google_id"), // For Google OAuth users
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -85,6 +89,20 @@ export const insertPaymentRequestSchema = createInsertSchema(paymentRequests).om
 export const insertWorkItemSchema = createInsertSchema(workItems).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertInfluencerProfileSchema = createInsertSchema(influencerProfiles).omit({ id: true, createdAt: true, updatedAt: true });
 
+// Authentication schemas
+export const registerUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  role: z.enum(["influencer", "admin"]).default("influencer"),
+});
+
+export const loginUserSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertPaymentRequest = z.infer<typeof insertPaymentRequestSchema>;
@@ -93,3 +111,5 @@ export type InsertWorkItem = z.infer<typeof insertWorkItemSchema>;
 export type WorkItem = typeof workItems.$inferSelect;
 export type InsertInfluencerProfile = z.infer<typeof insertInfluencerProfileSchema>;
 export type InfluencerProfile = typeof influencerProfiles.$inferSelect;
+export type RegisterUser = z.infer<typeof registerUserSchema>;
+export type LoginUser = z.infer<typeof loginUserSchema>;
