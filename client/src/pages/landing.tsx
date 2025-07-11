@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,13 +10,78 @@ import { Users, Star, Briefcase, Loader2, Mail, Lock, User } from "lucide-react"
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
+// Extend window interface for Google auth timeout
+declare global {
+  interface Window {
+    googleAuthTimeout?: NodeJS.Timeout | null;
+  }
+}
+
 export default function Landing() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { toast } = useToast();
 
+  // Clear loading state when user returns to the page (e.g., after navigating back from Google OAuth)
+  useEffect(() => {
+    const handleFocus = () => {
+      // Clear loading state when user returns to the page
+      setIsLoading(false);
+      
+      // Clear any pending Google auth timeout
+      if (window.googleAuthTimeout) {
+        clearTimeout(window.googleAuthTimeout);
+        window.googleAuthTimeout = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      // Clear loading state when page becomes visible again
+      if (document.visibilityState === 'visible') {
+        setIsLoading(false);
+        
+        // Clear any pending Google auth timeout
+        if (window.googleAuthTimeout) {
+          clearTimeout(window.googleAuthTimeout);
+          window.googleAuthTimeout = null;
+        }
+      }
+    };
+
+    // Add event listeners for page focus and visibility changes
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup event listeners on unmount
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Clear any pending Google auth timeout
+      if (window.googleAuthTimeout) {
+        clearTimeout(window.googleAuthTimeout);
+        window.googleAuthTimeout = null;
+      }
+    };
+  }, []);
+
   const handleGoogleAuth = () => {
     setIsLoading(true);
+    
+    // Set a timeout to clear loading state if user doesn't complete OAuth flow
+    const loadingTimeout = setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "⏰ Authentication timeout",
+        description: "Please try signing in again.",
+        variant: "destructive",
+        duration: 4000,
+      });
+    }, 30000); // 30 seconds timeout
+    
+    // Store timeout ID so we can clear it if user returns
+    window.googleAuthTimeout = loadingTimeout;
+    
     // Try to open in new tab first to bypass iframe restrictions
     try {
       // Check if we're in an iframe
