@@ -19,6 +19,7 @@ declare global {
 
 export default function Landing() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showCheckboxError, setShowCheckboxError] = useState(false);
 
   const { toast } = useToast();
 
@@ -154,10 +155,20 @@ export default function Landing() {
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
+    const termsCheckbox = form.querySelector('#terms') as HTMLInputElement;
+    
+    // Custom validation for checkbox
+    if (!termsCheckbox.checked) {
+      setShowCheckboxError(true);
+      setTimeout(() => setShowCheckboxError(false), 4000);
+      return;
+    }
+    
+    setShowCheckboxError(false);
+    setIsLoading(true);
     
     try {
       const response = await apiRequest("POST", "/auth/register", {
@@ -425,18 +436,29 @@ export default function Landing() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="terms" required />
-                    <Label htmlFor="terms" className="text-sm text-gray-600">
-                      I agree to the{" "}
-                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
-                        Terms of Service
-                      </button>{" "}
-                      and{" "}
-                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
-                        Privacy Policy
-                      </button>
-                    </Label>
+                  <div className="relative">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="terms" />
+                      <Label htmlFor="terms" className="text-sm text-gray-600">
+                        I agree to the{" "}
+                        <button type="button" className="text-blue-600 hover:text-blue-500 underline">
+                          Terms of Service
+                        </button>{" "}
+                        and{" "}
+                        <button type="button" className="text-blue-600 hover:text-blue-500 underline">
+                          Privacy Policy
+                        </button>
+                      </Label>
+                    </div>
+                    {showCheckboxError && (
+                      <div className="absolute top-0 left-[30px] bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded-md text-sm shadow-lg z-10">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-red-500">⚠️</span>
+                          <span>Please check this box if you want to proceed</span>
+                        </div>
+                        <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-50 border-b border-r border-red-200 transform rotate-45"></div>
+                      </div>
+                    )}
                   </div>
 
                   <Button type="submit" className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200">
