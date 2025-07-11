@@ -52,30 +52,34 @@ export default function Landing() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An error occurred. Please try again.";
       
-      // Simple, clean notifications
+      // Error notifications with red styling for visibility
       if (errorMessage.includes("No account found")) {
         toast({
-          title: "Account not found",
+          title: "❌ Account not found",
           description: "Please check your email or create a new account.",
-          variant: "default",
+          variant: "destructive",
+          duration: 6000,
         });
       } else if (errorMessage.includes("Google sign-in")) {
         toast({
-          title: "Use Google sign-in",
+          title: "⚠️ Use Google sign-in",
           description: "This account was created with Google. Please use the Google sign-in button.",
-          variant: "default",
+          variant: "destructive",
+          duration: 6000,
         });
       } else if (errorMessage.includes("Incorrect password")) {
         toast({
-          title: "Incorrect password",
+          title: "❌ Incorrect password",
           description: "Please check your password and try again.",
-          variant: "default",
+          variant: "destructive",
+          duration: 6000,
         });
       } else {
         toast({
-          title: "Sign in failed",
+          title: "❌ Sign in failed",
           description: "Please try again or contact support if the problem persists.",
           variant: "destructive",
+          duration: 6000,
         });
       }
     } finally {
@@ -100,33 +104,36 @@ export default function Landing() {
       });
       
       toast({
-        title: "Account created successfully",
+        title: "✅ Account created successfully",
         description: "You can now sign in with your new account",
-        variant: "success" as any,
+        variant: "default",
       });
       // Switch to login tab
       document.querySelector('[data-value="signin"]')?.click();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create account";
       
-      // Simple, clean notifications
+      // Error notifications with red styling for visibility
       if (errorMessage.includes("already exists") && errorMessage.includes("Google sign-in")) {
         toast({
-          title: "Account exists with Google",
+          title: "⚠️ Account exists with Google",
           description: "Please use the Google sign-in button to access your account.",
-          variant: "default",
+          variant: "destructive",
+          duration: 6000,
         });
       } else if (errorMessage.includes("already exists")) {
         toast({
-          title: "Account already exists",
+          title: "⚠️ Account already exists",
           description: "Please sign in instead or use a different email address.",
-          variant: "default",
+          variant: "destructive",
+          duration: 6000,
         });
       } else {
         toast({
-          title: "Registration failed",
+          title: "❌ Registration failed",
           description: "Please try again or contact support if the problem persists.",
           variant: "destructive",
+          duration: 6000,
         });
       }
     } finally {
