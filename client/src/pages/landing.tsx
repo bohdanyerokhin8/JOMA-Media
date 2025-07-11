@@ -4,15 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Star, Briefcase, Loader2, Mail, Lock, User, Shield } from "lucide-react";
+import { Users, Star, Briefcase, Loader2, Mail, Lock, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function Landing() {
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("influencer");
+
   const { toast } = useToast();
 
   const handleGoogleAuth = () => {
@@ -96,7 +96,7 @@ export default function Landing() {
         password: formData.get("password"),
         firstName: formData.get("firstName"),
         lastName: formData.get("lastName"),
-        role: selectedRole,
+
       });
       
       toast({
@@ -263,7 +263,7 @@ export default function Landing() {
               <TabsContent value="signup" className="space-y-6">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-semibold text-gray-900 mb-2">Join JOMA Media</h2>
-                  <p className="text-gray-600">Create your influencer or admin account</p>
+                  <p className="text-gray-600">Create your account to get started</p>
                 </div>
 
                 <Button
@@ -288,25 +288,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <Label className="text-sm font-medium text-gray-700 mb-3 block">I am a</Label>
-                  <RadioGroup value={selectedRole} onValueChange={setSelectedRole} className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-white transition-colors">
-                      <RadioGroupItem value="influencer" id="influencer" />
-                      <Label htmlFor="influencer" className="flex items-center space-x-2 cursor-pointer">
-                        <Star className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium">Influencer</span>
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-white transition-colors">
-                      <RadioGroupItem value="admin" id="admin" />
-                      <Label htmlFor="admin" className="flex items-center space-x-2 cursor-pointer">
-                        <Shield className="h-4 w-4 text-gray-600" />
-                        <span className="font-medium">Admin</span>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+
 
                 <form className="space-y-4" onSubmit={handleRegistration}>
                   <div className="grid grid-cols-2 gap-4">

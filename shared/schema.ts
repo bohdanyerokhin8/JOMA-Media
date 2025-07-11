@@ -95,7 +95,7 @@ export const registerUserSchema = z.object({
   password: z.string().min(8),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
-  role: z.enum(["influencer", "admin"]).default("influencer"),
+  role: z.enum(["influencer", "admin"]).default("influencer").optional(),
 });
 
 export const loginUserSchema = z.object({
