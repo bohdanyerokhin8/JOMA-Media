@@ -105,7 +105,10 @@ export function setupPassport(app: Express) {
 export function setupAuthRoutes(app: Express) {
   // Google OAuth routes
   app.get('/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
+    passport.authenticate('google', { 
+      scope: ['profile', 'email'],
+      prompt: 'select_account'
+    })
   );
 
   app.get('/auth/google/callback',
