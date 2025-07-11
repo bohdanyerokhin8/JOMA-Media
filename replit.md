@@ -6,6 +6,8 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
+- **Public-Facing App Architecture (Jan 2025)**: Confirmed optimal setup for public access without Replit Auth requirement
+- **Google OAuth with Account Selection (Jan 2025)**: Added prompt=select_account for better multi-account user experience
 - **Google OAuth Authentication Complete (Jan 2025)**: Fully implemented Google OAuth 2.0 authentication with proper credential management and environment variable configuration
 - **Environment Variable Configuration**: Added dotenv support for secure credential loading in development
 - **Authentication System Fixed (Jan 2025)**: Resolved 401 Unauthorized errors in production by fixing session configuration
@@ -34,7 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Runtime**: Node.js with Express server
 - **Language**: TypeScript with ESM modules
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Replit Auth with OpenID Connect
+- **Authentication**: Dual system (Google OAuth + Email/Password) with Passport.js
 - **Session Management**: Express sessions with PostgreSQL storage
 
 ### Database Design
@@ -45,11 +47,11 @@ Preferred communication style: Simple, everyday language.
 ## Key Components
 
 ### Authentication System
-- **Provider**: Cloudflare Access with Google OAuth 2.0
+- **Provider**: Dual authentication (Google OAuth 2.0 + Email/Password)
 - **Session Storage**: PostgreSQL-backed sessions using `connect-pg-simple`
 - **User Roles**: Two-tier system (influencer/admin)
-- **Security**: JWT-based authentication via Cloudflare Access headers
-- **Flow**: Users authenticate through Cloudflare Access gateway, JWT tokens passed via headers
+- **Security**: Passport.js with secure session management
+- **Flow**: Users can register/login with email/password or Google OAuth
 
 ### Data Models
 - **Users**: Core user information with role-based access
@@ -66,11 +68,12 @@ Preferred communication style: Simple, everyday language.
 ## Data Flow
 
 ### User Authentication Flow
-1. User initiates login via `/api/login`
-2. Replit Auth handles OIDC flow
-3. User data stored/updated in PostgreSQL
-4. Session created with role-based permissions
-5. Frontend receives user context via `/api/auth/user`
+1. User chooses authentication method (Google OAuth or Email/Password)
+2. Google OAuth: `/auth/google` → Google consent → callback → session
+3. Email/Password: `/auth/login` → credential validation → session
+4. User data stored/updated in PostgreSQL with provider tracking
+5. Session created with role-based permissions
+6. Frontend receives user context via `/api/auth/user`
 
 ### Payment Request Workflow
 1. Influencer submits payment request with proof of work
@@ -91,9 +94,9 @@ Preferred communication style: Simple, everyday language.
 - **Schema Management**: Drizzle Kit for migrations
 
 ### Authentication
-- **Service**: Replit Auth OIDC
+- **Service**: Dual system (Google OAuth + Email/Password)
 - **Session Store**: PostgreSQL with `connect-pg-simple`
-- **Security**: OpenID Connect with passport.js
+- **Security**: Passport.js with Google Strategy and Local Strategy
 
 ### UI Libraries
 - **Component Library**: shadcn/ui built on Radix UI
