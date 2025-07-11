@@ -19,6 +19,7 @@ declare global {
 
 export default function Landing() {
   const [isLoading, setIsLoading] = useState(false);
+  const [termsError, setTermsError] = useState(false);
 
   const { toast } = useToast();
 
@@ -154,10 +155,25 @@ export default function Landing() {
 
   const handleRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setTermsError(false);
     
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
+    
+    // Check if terms checkbox is checked
+    const termsChecked = formData.get("termsAgreement");
+    if (!termsChecked) {
+      setTermsError(true);
+      toast({
+        title: "❌ Terms & Conditions Required",
+        description: "Please agree to the Terms of Service and Privacy Policy to continue.",
+        variant: "destructive",
+        duration: 6000,
+      });
+      return;
+    }
+    
+    setIsLoading(true);
     
     try {
       const response = await apiRequest("POST", "/auth/register", {
@@ -425,18 +441,33 @@ export default function Landing() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="terms" required />
-                    <Label htmlFor="terms" className="text-sm text-gray-600">
-                      I agree to the{" "}
-                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
-                        Terms of Service
-                      </button>{" "}
-                      and{" "}
-                      <button type="button" className="text-blue-600 hover:text-blue-500 underline">
-                        Privacy Policy
-                      </button>
-                    </Label>
+                  <div className="flex items-start space-x-3">
+                    <Checkbox 
+                      id="terms-agreement" 
+                      name="termsAgreement"
+                      value="true"
+                      className={`mt-1 ${termsError ? 'border-red-500' : ''}`}
+                      onClick={() => setTermsError(false)}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="terms-agreement" className="text-sm text-gray-600 leading-5">
+                        I agree to the{" "}
+                        <button type="button" className="text-blue-600 hover:text-blue-500 underline">
+                          Terms of Service
+                        </button>{" "}
+                        and{" "}
+                        <button type="button" className="text-blue-600 hover:text-blue-500 underline">
+                          Privacy Policy
+                        </button>
+                        <span className="text-red-500 ml-1">*</span>
+                      </Label>
+                      {termsError && (
+                        <p className="text-red-500 text-xs mt-1 flex items-center">
+                          <span className="mr-1">⚠️</span>
+                          Please check this box to agree to the Terms of Service and Privacy Policy
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <Button type="submit" className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200">
