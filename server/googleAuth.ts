@@ -67,18 +67,24 @@ export function setupPassport(app: Express) {
       ? `https://${process.env.REPLIT_DOMAINS}/auth/google/callback`
       : "/auth/google/callback";
     
+    console.log(`Google OAuth configured with callback URL: ${callbackURL}`);
+    
     passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: callbackURL
     }, async (accessToken, refreshToken, profile, done) => {
       try {
+        console.log('Google OAuth profile received:', profile.displayName);
         const user = await handleGoogleOAuth(profile._json);
         return done(null, createSessionUser(user));
       } catch (error) {
+        console.error('Google OAuth error:', error);
         return done(error, null);
       }
     }));
+  } else {
+    console.log('Google OAuth not configured - missing client ID or secret');
   }
 
   // Local email/password strategy

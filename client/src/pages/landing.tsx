@@ -17,8 +17,22 @@ export default function Landing() {
 
   const handleGoogleAuth = () => {
     setIsLoading(true);
-    // Redirect to Google OAuth endpoint
-    window.location.href = "/auth/google";
+    // Try to open in new tab first to bypass iframe restrictions
+    try {
+      // Check if we're in an iframe
+      const isInIframe = window.self !== window.top;
+      
+      if (isInIframe) {
+        // Open in new tab to bypass iframe restrictions
+        window.open("/auth/google", "_blank");
+      } else {
+        // Direct navigation
+        window.location.href = "/auth/google";
+      }
+    } catch (error) {
+      // Fallback to direct navigation
+      window.location.href = "/auth/google";
+    }
   };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
