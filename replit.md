@@ -9,6 +9,7 @@ This is a boutique influencer management platform built for JOMA Media, designed
 - **Dashboard System with Sidebar Navigation (Jan 2025)**: Built comprehensive dashboard system with role-based access and URL-based navigation
 - **Role-Based Dashboard Routing (Jan 2025)**: Implemented separate dashboards for influencers and admins with appropriate role-based access control
 - **Fixed Checkbox Validation (Jan 2025)**: Resolved account creation issue with Radix UI checkbox validation using data-state attribute
+- **Cascading Delete for Admin Invites (Jan 2025)**: Implemented cascading delete functionality - when admin invite is deleted, corresponding user account is also deleted if invite was accepted
 - **Complete API Routes (Jan 2025)**: Added all necessary API endpoints for payment requests, work items, profiles, and admin functionality
 - **Database Schema Updates (Jan 2025)**: Enhanced schema with proper role separation and all necessary tables for full functionality
 - **Public-Facing App Architecture (Jan 2025)**: Confirmed optimal setup for public access without Replit Auth requirement

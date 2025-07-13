@@ -265,6 +265,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAdminInvite(id: string): Promise<void> {
+    // First, get the invite to check if it has an associated user
+    const invite = await db
+      .select()
+      .from(adminInvites)
+      .where(eq(adminInvites.id, id));
+    
+    if (invite.length > 0) {
+      const inviteData = invite[0];
+      
+      // If invite status is "accepted", find and delete the associated user
+      if (inviteData.status === "accepted") {
+        await db
+          .delete(users)
+          .where(eq(users.email, inviteData.email));
+      }
+    }
+    
+    // Delete the invite
     await db
       .delete(adminInvites)
       .where(eq(adminInvites.id, id));
