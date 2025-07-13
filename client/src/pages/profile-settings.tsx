@@ -51,18 +51,18 @@ export default function ProfileSettings() {
   useEffect(() => {
     if (profile) {
       setFormData({
-        instagramHandle: profile.instagramHandle || '',
-        tiktokHandle: profile.tiktokHandle || '',
-        youtubeHandle: profile.youtubeHandle || '',
-        primaryRate: profile.primaryRate?.toString() || '',
+        instagramHandle: profile.socialLinks?.instagram || '',
+        tiktokHandle: profile.socialLinks?.tiktok || '',
+        youtubeHandle: profile.socialLinks?.youtube || '',
+        primaryRate: profile.rates?.post?.toString() || '',
         bio: profile.bio || '',
-        niches: profile.niches || '',
-        instagramFollowers: profile.instagramFollowers?.toString() || '',
-        tiktokFollowers: profile.tiktokFollowers?.toString() || '',
-        youtubeSubscribers: profile.youtubeSubscribers?.toString() || '',
-        avgEngagementRate: profile.avgEngagementRate?.toString() || '',
+        niches: Array.isArray(profile.niches) ? profile.niches.join(', ') : '',
+        instagramFollowers: profile.followers?.instagram?.toString() || '',
+        tiktokFollowers: profile.followers?.tiktok?.toString() || '',
+        youtubeSubscribers: profile.followers?.youtube?.toString() || '',
+        avgEngagementRate: profile.engagement?.instagram?.toString() || '',
         location: profile.location || '',
-        preferredContentTypes: profile.preferredContentTypes || '',
+        preferredContentTypes: Array.isArray(profile.languages) ? profile.languages.join(', ') : '',
       });
     }
   }, [profile]);
@@ -95,12 +95,26 @@ export default function ProfileSettings() {
     e.preventDefault();
     
     const profileData = {
-      ...formData,
-      primaryRate: formData.primaryRate ? parseFloat(formData.primaryRate) : null,
-      instagramFollowers: formData.instagramFollowers ? parseInt(formData.instagramFollowers) : null,
-      tiktokFollowers: formData.tiktokFollowers ? parseInt(formData.tiktokFollowers) : null,
-      youtubeSubscribers: formData.youtubeSubscribers ? parseInt(formData.youtubeSubscribers) : null,
-      avgEngagementRate: formData.avgEngagementRate ? parseFloat(formData.avgEngagementRate) : null,
+      bio: formData.bio || null,
+      niches: formData.niches ? formData.niches.split(',').map(n => n.trim()).filter(n => n) : [],
+      rates: {
+        post: formData.primaryRate ? parseFloat(formData.primaryRate) : null,
+      },
+      socialLinks: {
+        instagram: formData.instagramHandle || null,
+        tiktok: formData.tiktokHandle || null,
+        youtube: formData.youtubeHandle || null,
+      },
+      followers: {
+        instagram: formData.instagramFollowers ? parseInt(formData.instagramFollowers) : null,
+        tiktok: formData.tiktokFollowers ? parseInt(formData.tiktokFollowers) : null,
+        youtube: formData.youtubeSubscribers ? parseInt(formData.youtubeSubscribers) : null,
+      },
+      engagement: {
+        instagram: formData.avgEngagementRate ? parseFloat(formData.avgEngagementRate) : null,
+      },
+      location: formData.location || null,
+      languages: formData.preferredContentTypes ? formData.preferredContentTypes.split(',').map(l => l.trim()).filter(l => l) : [],
     };
 
     updateProfileMutation.mutate(profileData);
