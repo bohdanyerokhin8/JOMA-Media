@@ -20,8 +20,59 @@ declare global {
 export default function Landing() {
   const [isLoading, setIsLoading] = useState(false);
   const [showCheckboxError, setShowCheckboxError] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
   const { toast } = useToast();
+
+  // Custom validation component
+  const ValidationError = ({ message, position = "right" }: { message: string; position?: "right" | "top" }) => (
+    <div className={`absolute ${position === "right" ? "top-0 left-[30px]" : "bottom-full left-0 mb-2"} bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded-md text-sm shadow-lg z-10 whitespace-nowrap`}>
+      <div className="flex items-center space-x-2">
+        <span className="text-red-500">⚠️</span>
+        <span>{message}</span>
+      </div>
+      <div className={`absolute ${position === "right" ? "-bottom-1 left-4" : "top-full left-4"} w-2 h-2 bg-red-50 border-b border-r border-red-200 transform rotate-45`}></div>
+    </div>
+  );
+
+  const validateField = (name: string, value: string) => {
+    const errors: {[key: string]: string} = {};
+    
+    switch (name) {
+      case 'email':
+        if (!value) {
+          errors.email = 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errors.email = 'Please enter a valid email address';
+        }
+        break;
+      case 'password':
+        if (!value) {
+          errors.password = 'Password is required';
+        } else if (value.length < 8) {
+          errors.password = 'Password must be at least 8 characters';
+        }
+        break;
+      case 'firstName':
+        if (!value) {
+          errors.firstName = 'First name is required';
+        }
+        break;
+      case 'lastName':
+        if (!value) {
+          errors.lastName = 'Last name is required';
+        }
+        break;
+    }
+    
+    setValidationErrors(prev => ({ ...prev, [name]: errors[name] || '' }));
+    return !errors[name];
+  };
+
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    validateField(name, value);
+  };
 
   // Clear loading state when user returns to the page (e.g., after navigating back from Google OAuth)
   useEffect(() => {
@@ -103,15 +154,27 @@ export default function Landing() {
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
     
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    
+    // Custom validation
+    const isEmailValid = validateField('email', email);
+    const isPasswordValid = validateField('password', password);
+    
+    if (!isEmailValid || !isPasswordValid) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
     try {
       const response = await apiRequest("POST", "/auth/login", {
-        email: formData.get("email"),
-        password: formData.get("password"),
+        email,
+        password,
       });
       
       window.location.href = "/";
@@ -160,10 +223,25 @@ export default function Landing() {
     const formData = new FormData(form);
     const termsCheckbox = form.querySelector('#terms') as HTMLInputElement;
     
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    
+    // Custom validation
+    const isEmailValid = validateField('email', email);
+    const isPasswordValid = validateField('password', password);
+    const isFirstNameValid = validateField('firstName', firstName);
+    const isLastNameValid = validateField('lastName', lastName);
+    
     // Custom validation for checkbox
     if (!termsCheckbox.checked) {
       setShowCheckboxError(true);
       setTimeout(() => setShowCheckboxError(false), 4000);
+      return;
+    }
+    
+    if (!isEmailValid || !isPasswordValid || !isFirstNameValid || !isLastNameValid) {
       return;
     }
     
@@ -172,11 +250,10 @@ export default function Landing() {
     
     try {
       const response = await apiRequest("POST", "/auth/register", {
-        email: formData.get("email"),
-        password: formData.get("password"),
-        firstName: formData.get("firstName"),
-        lastName: formData.get("lastName"),
-
+        email,
+        password,
+        firstName,
+        lastName,
       });
       
       toast({
@@ -291,7 +368,7 @@ export default function Landing() {
                 </div>
 
                 <form className="space-y-4" onSubmit={handleEmailAuth}>
-                  <div>
+                  <div className="relative">
                     <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email address</Label>
                     <div className="mt-1 relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -299,14 +376,18 @@ export default function Landing() {
                         id="email"
                         name="email"
                         type="email"
-                        required
                         className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Enter your email"
+                        onChange={handleFieldChange}
+                        onBlur={handleFieldChange}
                       />
                     </div>
+                    {validationErrors.email && (
+                      <ValidationError message={validationErrors.email} position="right" />
+                    )}
                   </div>
                   
-                  <div>
+                  <div className="relative">
                     <Label htmlFor="password" className="text-sm font-medium text-gray-700">Password</Label>
                     <div className="mt-1 relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -314,11 +395,15 @@ export default function Landing() {
                         id="password"
                         name="password"
                         type="password"
-                        required
                         className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Enter your password"
+                        onChange={handleFieldChange}
+                        onBlur={handleFieldChange}
                       />
                     </div>
+                    {validationErrors.password && (
+                      <ValidationError message={validationErrors.password} position="right" />
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -375,7 +460,7 @@ export default function Landing() {
 
                 <form className="space-y-4" onSubmit={handleRegistration}>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
+                    <div className="relative">
                       <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First name</Label>
                       <div className="mt-1 relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -383,13 +468,17 @@ export default function Landing() {
                           id="firstName"
                           name="firstName"
                           type="text"
-                          required
                           className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                           placeholder="John"
+                          onChange={handleFieldChange}
+                          onBlur={handleFieldChange}
                         />
                       </div>
+                      {validationErrors.firstName && (
+                        <ValidationError message={validationErrors.firstName} position="right" />
+                      )}
                     </div>
-                    <div>
+                    <div className="relative">
                       <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last name</Label>
                       <div className="mt-1 relative">
                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -397,15 +486,19 @@ export default function Landing() {
                           id="lastName"
                           name="lastName"
                           type="text"
-                          required
                           className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                           placeholder="Doe"
+                          onChange={handleFieldChange}
+                          onBlur={handleFieldChange}
                         />
                       </div>
+                      {validationErrors.lastName && (
+                        <ValidationError message={validationErrors.lastName} position="right" />
+                      )}
                     </div>
                   </div>
                   
-                  <div>
+                  <div className="relative">
                     <Label htmlFor="signup-email" className="text-sm font-medium text-gray-700">Email address</Label>
                     <div className="mt-1 relative">
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -413,14 +506,18 @@ export default function Landing() {
                         id="signup-email"
                         name="email"
                         type="email"
-                        required
                         className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Enter your email"
+                        onChange={handleFieldChange}
+                        onBlur={handleFieldChange}
                       />
                     </div>
+                    {validationErrors.email && (
+                      <ValidationError message={validationErrors.email} position="right" />
+                    )}
                   </div>
                   
-                  <div>
+                  <div className="relative">
                     <Label htmlFor="signup-password" className="text-sm font-medium text-gray-700">Password</Label>
                     <div className="mt-1 relative">
                       <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -428,12 +525,15 @@ export default function Landing() {
                         id="signup-password"
                         name="password"
                         type="password"
-                        required
-                        minLength={8}
                         className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Create a password (min 8 characters)"
+                        onChange={handleFieldChange}
+                        onBlur={handleFieldChange}
                       />
                     </div>
+                    {validationErrors.password && (
+                      <ValidationError message={validationErrors.password} position="right" />
+                    )}
                   </div>
 
                   <div className="relative">
