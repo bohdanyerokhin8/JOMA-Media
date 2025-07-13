@@ -47,6 +47,10 @@ export default function ProfileSettings() {
     preferredContentTypes: '',
   });
 
+  // Profile photo state
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   // Update form when profile loads
   useEffect(() => {
     if (profile) {
@@ -81,11 +85,38 @@ export default function ProfileSettings() {
         variant: "default",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
     },
     onError: (error: any) => {
       toast({
         title: "❌ Update failed",
         description: error.message || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Profile photo upload mutation
+  const uploadPhotoMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('profileImage', file);
+      return await apiRequest('POST', '/api/upload-profile-image', formData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "✅ Photo updated successfully",
+        description: "Your profile photo has been updated.",
+        variant: "default",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      setProfileImage(null);
+      setImagePreview(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "❌ Upload failed",
+        description: error.message || "Failed to upload photo. Please try again.",
         variant: "destructive",
       });
     },
@@ -127,6 +158,40 @@ export default function ProfileSettings() {
     }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "❌ File too large",
+          description: "Please select an image smaller than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "❌ Invalid file type",
+          description: "Please select a valid image file (JPG, PNG, or GIF).",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProfileImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const getInitials = (firstName?: string, lastName?: string) => {
     return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || 'U';
   };
@@ -160,16 +225,42 @@ export default function ProfileSettings() {
           <CardContent className="space-y-4">
             <div className="flex items-center space-x-6">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || ''} />
+                <AvatarImage 
+                  src={imagePreview || user?.profileImageUrl || ''} 
+                  alt={user?.firstName || ''} 
+                />
                 <AvatarFallback className="text-lg">
                   {getInitials(user?.firstName, user?.lastName)}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <Button type="button" variant="outline" size="sm">
-                  <Camera className="h-4 w-4 mr-2" />
-                  Change Photo
-                </Button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="profile-image-input"
+                />
+                <Label htmlFor="profile-image-input">
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <span>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Change Photo
+                    </span>
+                  </Button>
+                </Label>
+                {profileImage && (
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="sm"
+                    onClick={() => uploadPhotoMutation.mutate(profileImage)}
+                    disabled={uploadPhotoMutation.isPending}
+                    className="ml-2"
+                  >
+                    {uploadPhotoMutation.isPending ? 'Uploading...' : 'Upload Photo'}
+                  </Button>
+                )}
                 <p className="text-sm text-gray-500 mt-1">
                   JPG, PNG or GIF. Max size 5MB.
                 </p>

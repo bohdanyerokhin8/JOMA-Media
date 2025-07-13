@@ -5,12 +5,30 @@ import { setupSession, setupPassport, setupAuthRoutes } from "./googleAuth";
 import { registerUser, isAuthenticated } from "./auth";
 import { insertPaymentRequestSchema, insertWorkItemSchema, insertInfluencerProfileSchema, registerUserSchema } from "@shared/schema";
 import { z } from "zod";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs/promises';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session and passport
   setupSession(app);
   setupPassport(app);
   setupAuthRoutes(app);
+
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed!'), false);
+      }
+    },
+  });
 
   // Registration endpoint
   app.post('/auth/register', async (req, res) => {
@@ -262,6 +280,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating payment request:", error);
       res.status(400).json({ message: "Failed to update payment request" });
+    }
+  });
+
+  // Profile image upload route
+  app.post('/api/upload-profile-image', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      const userId = req.user.id;
+      const file = req.file;
+      
+      // Convert image to base64 data URL (for simplicity, in production you'd use cloud storage)
+      const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+      
+      // Update user's profile image URL
+      const updatedUser = await storage.upsertUser({
+        id: userId,
+        profileImageUrl: base64Image,
+        updatedAt: new Date(),
+      });
+
+      res.json({ 
+        message: "Profile image updated successfully",
+        profileImageUrl: updatedUser.profileImageUrl
+      });
+    } catch (error) {
+      console.error("Error uploading profile image:", error);
+      res.status(500).json({ message: "Failed to upload profile image" });
     }
   });
 
