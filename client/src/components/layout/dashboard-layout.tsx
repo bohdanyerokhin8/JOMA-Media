@@ -1,8 +1,13 @@
-import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import Sidebar from "./sidebar";
 
-export default function Home() {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
@@ -17,15 +22,6 @@ export default function Home() {
         window.location.href = "/";
       }, 500);
       return;
-    }
-    
-    // Redirect to appropriate dashboard based on user role
-    if (user) {
-      if (user.role === 'admin') {
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/dashboard";
-      }
     }
   }, [user, isLoading, toast]);
 
@@ -44,13 +40,14 @@ export default function Home() {
     return null;
   }
 
-  // This component just handles redirect logic now
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50 flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        <p className="text-gray-600">Redirecting to dashboard...</p>
-      </div>
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <main className="flex-1 overflow-auto">
+        <div className="p-6">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

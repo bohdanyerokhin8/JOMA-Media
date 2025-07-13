@@ -8,9 +8,15 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import OAuthTest from "@/pages/oauth-test";
+import Dashboard from "@/pages/dashboard";
+import ProfileSettings from "@/pages/profile-settings";
+import PaymentRequests from "@/pages/payment-requests";
+import JobTracking from "@/pages/job-tracking";
+import AdminDashboard from "@/pages/admin-dashboard";
+import DashboardLayout from "@/components/layout/dashboard-layout";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   return (
     <Switch>
@@ -18,7 +24,62 @@ function Router() {
         <Route path="/" component={Landing} />
       ) : (
         <>
+          {/* Legacy home route - redirect to appropriate dashboard */}
           <Route path="/" component={Home} />
+          
+          {/* Influencer routes */}
+          <Route path="/dashboard">
+            <DashboardLayout>
+              <Dashboard />
+            </DashboardLayout>
+          </Route>
+          
+          <Route path="/profile">
+            <DashboardLayout>
+              <ProfileSettings />
+            </DashboardLayout>
+          </Route>
+          
+          <Route path="/payments">
+            <DashboardLayout>
+              <PaymentRequests />
+            </DashboardLayout>
+          </Route>
+          
+          <Route path="/jobs">
+            <DashboardLayout>
+              <JobTracking />
+            </DashboardLayout>
+          </Route>
+          
+          {/* Admin routes */}
+          {user?.role === 'admin' && (
+            <>
+              <Route path="/admin">
+                <DashboardLayout>
+                  <AdminDashboard />
+                </DashboardLayout>
+              </Route>
+              
+              <Route path="/admin/influencers">
+                <DashboardLayout>
+                  <div>Manage Influencers (Coming Soon)</div>
+                </DashboardLayout>
+              </Route>
+              
+              <Route path="/admin/payments">
+                <DashboardLayout>
+                  <div>Payment Reviews (Coming Soon)</div>
+                </DashboardLayout>
+              </Route>
+              
+              <Route path="/admin/campaigns">
+                <DashboardLayout>
+                  <div>Campaign Management (Coming Soon)</div>
+                </DashboardLayout>
+              </Route>
+            </>
+          )}
         </>
       )}
       <Route path="/oauth-test" component={OAuthTest} />
