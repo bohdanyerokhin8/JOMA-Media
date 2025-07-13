@@ -367,7 +367,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <form className="space-y-4" onSubmit={handleEmailAuth}>
+                <form className="space-y-4" onSubmit={handleEmailAuth} noValidate>
                   <div className="relative">
                     <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email address</Label>
                     <div className="mt-1 relative">
@@ -458,7 +458,7 @@ export default function Landing() {
 
 
 
-                <form className="space-y-4" onSubmit={handleRegistration}>
+                <form className="space-y-4" onSubmit={handleRegistration} noValidate>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First name</Label>
@@ -551,12 +551,12 @@ export default function Landing() {
                       </Label>
                     </div>
                     {showCheckboxError && (
-                      <div className="absolute top-0 left-[30px] bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded-md text-sm shadow-lg z-10">
+                      <div className="absolute -top-12 left-0 bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded-md text-sm shadow-lg z-10">
                         <div className="flex items-center space-x-2">
                           <span className="text-red-500">⚠️</span>
                           <span>Please check this box if you want to proceed</span>
                         </div>
-                        <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-50 border-b border-r border-red-200 transform rotate-45"></div>
+                        <div className="absolute bottom-0 left-4 w-2 h-2 bg-red-50 border-b border-r border-red-200 transform rotate-45 translate-y-1"></div>
                       </div>
                     )}
                   </div>
