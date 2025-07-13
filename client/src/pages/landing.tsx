@@ -26,7 +26,7 @@ export default function Landing() {
 
   // Custom validation component
   const ValidationError = ({ message, position = "right" }: { message: string; position?: "right" | "top" }) => (
-    <div className={`absolute ${position === "right" ? "top-0 left-[30px]" : "bottom-full left-0 mb-2"} bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded-md text-sm shadow-lg z-10 whitespace-nowrap`}>
+    <div className={`absolute ${position === "right" ? "top-0 left-[15px]" : "bottom-full left-0 mb-2"} bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded-md text-sm shadow-lg z-10 whitespace-nowrap`}>
       <div className="flex items-center space-x-2">
         <span className="text-red-500">⚠️</span>
         <span>{message}</span>
