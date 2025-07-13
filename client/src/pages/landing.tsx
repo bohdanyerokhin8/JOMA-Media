@@ -486,7 +486,7 @@ export default function Landing() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 mt-1">
                         <Checkbox id="remember" />
                         <Label
                           htmlFor="remember"
@@ -506,6 +506,7 @@ export default function Landing() {
                     <Button
                       type="submit"
                       className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200"
+                      style={{ marginTop: "20px" }}
                     >
                       Sign in
                     </Button>
@@ -673,7 +674,7 @@ export default function Landing() {
                       )}
                     </div>
 
-                    <div className="relative">
+                    <div className="relative" style={{ marginTop: "25px" }}>
                       <div className="flex items-center space-x-2">
                         <Checkbox id="terms" />
                         <Label
@@ -684,6 +685,7 @@ export default function Landing() {
                           <button
                             type="button"
                             className="text-blue-600 hover:text-blue-500 underline"
+                            r
                           >
                             Terms of Service
                           </button>{" "}
@@ -715,6 +717,7 @@ export default function Landing() {
                     <Button
                       type="submit"
                       className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200"
+                      style={{ marginTop: "25px" }}
                     >
                       Create account
                     </Button>
