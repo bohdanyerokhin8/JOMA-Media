@@ -9,9 +9,16 @@ import {
   CheckCircle,
   AlertCircle,
   Calendar,
-  Eye
+  Eye,
+  Instagram,
+  Youtube,
+  Music,
+  User,
+  ExternalLink
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -175,9 +182,16 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Eye className="h-5 w-5 mr-2" />
-              Profile Status
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Eye className="h-5 w-5 mr-2" />
+                Profile Status
+              </div>
+              <Link href="/profile-settings">
+                <Button variant="outline" size="sm">
+                  Edit Profile
+                </Button>
+              </Link>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -190,22 +204,69 @@ export default function Dashboard() {
                       <span className="text-sm font-medium">Profile Complete</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600">Instagram</p>
-                      <p className="font-medium">{profile.instagramHandle || 'Not set'}</p>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Instagram className="h-5 w-5 text-purple-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Instagram</p>
+                          <p className="text-xs text-gray-600">
+                            {profile.socialLinks?.instagram ? `@${profile.socialLinks.instagram}` : 'Not set'}
+                          </p>
+                        </div>
+                      </div>
+                      {profile.followers?.instagram && (
+                        <span className="text-sm font-medium text-purple-600">
+                          {profile.followers.instagram.toLocaleString()} followers
+                        </span>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-gray-600">TikTok</p>
-                      <p className="font-medium">{profile.tiktokHandle || 'Not set'}</p>
+
+                    <div className="flex items-center justify-between p-3 bg-pink-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Music className="h-5 w-5 text-pink-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">TikTok</p>
+                          <p className="text-xs text-gray-600">
+                            {profile.socialLinks?.tiktok ? `@${profile.socialLinks.tiktok}` : 'Not set'}
+                          </p>
+                        </div>
+                      </div>
+                      {profile.followers?.tiktok && (
+                        <span className="text-sm font-medium text-pink-600">
+                          {profile.followers.tiktok.toLocaleString()} followers
+                        </span>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-gray-600">YouTube</p>
-                      <p className="font-medium">{profile.youtubeHandle || 'Not set'}</p>
+
+                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Youtube className="h-5 w-5 text-red-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">YouTube</p>
+                          <p className="text-xs text-gray-600">
+                            {profile.socialLinks?.youtube ? `@${profile.socialLinks.youtube}` : 'Not set'}
+                          </p>
+                        </div>
+                      </div>
+                      {profile.followers?.youtube && (
+                        <span className="text-sm font-medium text-red-600">
+                          {profile.followers.youtube.toLocaleString()} subscribers
+                        </span>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-gray-600">Primary Rate</p>
-                      <p className="font-medium">${profile.primaryRate || 'Not set'}</p>
+
+                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <DollarSign className="h-5 w-5 text-green-600" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Primary Rate</p>
+                          <p className="text-xs text-gray-600">Post rate</p>
+                        </div>
+                      </div>
+                      <span className="text-sm font-medium text-green-600">
+                        {profile.rates?.post ? `$${profile.rates.post}` : 'Not set'}
+                      </span>
                     </div>
                   </div>
                 </>
