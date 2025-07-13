@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -14,7 +16,7 @@ export default function Home() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/";
+        setLocation("/");
       }, 500);
       return;
     }
@@ -22,12 +24,12 @@ export default function Home() {
     // Redirect to appropriate dashboard based on user role
     if (user) {
       if (user.role === 'admin') {
-        window.location.href = "/admin";
+        setLocation("/admin");
       } else {
-        window.location.href = "/dashboard";
+        setLocation("/dashboard");
       }
     }
-  }, [user, isLoading, toast]);
+  }, [user, isLoading, toast, setLocation]);
 
   if (isLoading) {
     return (

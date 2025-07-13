@@ -22,7 +22,11 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/oauth-test" component={OAuthTest} />
+          <Route component={NotFound} />
+        </>
       ) : (
         <>
           {/* Legacy home route - redirect to appropriate dashboard */}
@@ -87,10 +91,9 @@ function Router() {
               </Route>
             </>
           )}
+          <Route component={NotFound} />
         </>
       )}
-      <Route path="/oauth-test" component={OAuthTest} />
-      <Route component={NotFound} />
     </Switch>
   );
 }
