@@ -59,6 +59,7 @@ export default function Sidebar({ className }: SidebarProps) {
     { href: '/admin/influencers', label: 'Manage Influencers', icon: Users },
     { href: '/admin/payments', label: 'Payment Reviews', icon: FileText },
     { href: '/admin/campaigns', label: 'Campaign Management', icon: Briefcase },
+    { href: '/admin/invites', label: 'Admin Invites', icon: Settings },
   ];
 
   const navItems = isAdmin ? adminNavItems : influencerNavItems;

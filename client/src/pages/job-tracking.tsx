@@ -6,47 +6,59 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Briefcase, 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
+import {
+  Briefcase,
+  Calendar,
+  Clock,
+  CheckCircle,
   AlertCircle,
   FileText,
   Plus,
   Edit,
-  Eye
+  Eye,
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function JobTracking() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<any>(null);
-  
+
   // Form state for new work item
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    campaignId: '',
-    dueDate: '',
+    title: "",
+    description: "",
+    campaignId: "",
+    dueDate: "",
   });
 
   // Fetch work items
   const { data: workItems, isLoading } = useQuery({
-    queryKey: ['/api/work-items'],
+    queryKey: ["/api/work-items"],
     enabled: !!user,
   });
 
   // Create work item mutation
   const createWorkItemMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest('POST', '/api/work-items', data);
+      return await apiRequest("POST", "/api/work-items", data);
     },
     onSuccess: () => {
       toast({
@@ -56,12 +68,12 @@ export default function JobTracking() {
       });
       setIsCreateModalOpen(false);
       setFormData({
-        title: '',
-        description: '',
-        campaignId: '',
-        dueDate: '',
+        title: "",
+        description: "",
+        campaignId: "",
+        dueDate: "",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/work-items'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/work-items"] });
     },
     onError: (error: any) => {
       toast({
@@ -75,7 +87,7 @@ export default function JobTracking() {
   // Update work item status mutation
   const updateWorkItemMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      return await apiRequest('PUT', `/api/work-items/${id}`, { status });
+      return await apiRequest("PUT", `/api/work-items/${id}`, { status });
     },
     onSuccess: () => {
       toast({
@@ -83,12 +95,13 @@ export default function JobTracking() {
         description: "Job status has been updated successfully.",
         variant: "default",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/work-items'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/work-items"] });
     },
     onError: (error: any) => {
       toast({
         title: "❌ Update failed",
-        description: error.message || "Failed to update status. Please try again.",
+        description:
+          error.message || "Failed to update status. Please try again.",
         variant: "destructive",
       });
     },
@@ -96,7 +109,7 @@ export default function JobTracking() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title || !formData.description) {
       toast({
         title: "❌ Missing information",
@@ -108,14 +121,16 @@ export default function JobTracking() {
 
     createWorkItemMutation.mutate({
       ...formData,
-      dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : null,
+      dueDate: formData.dueDate
+        ? new Date(formData.dueDate).toISOString()
+        : null,
     });
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -125,31 +140,46 @@ export default function JobTracking() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'brief_sent': return 'bg-blue-100 text-blue-800';
-      case 'content_submitted': return 'bg-yellow-100 text-yellow-800';
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'paid': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "brief_sent":
+        return "bg-blue-100 text-blue-800";
+      case "content_submitted":
+        return "bg-yellow-100 text-yellow-800";
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "paid":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'brief_sent': return <FileText className="h-4 w-4" />;
-      case 'content_submitted': return <Clock className="h-4 w-4" />;
-      case 'approved': return <CheckCircle className="h-4 w-4" />;
-      case 'paid': return <CheckCircle className="h-4 w-4" />;
-      default: return <AlertCircle className="h-4 w-4" />;
+      case "brief_sent":
+        return <FileText className="h-4 w-4" />;
+      case "content_submitted":
+        return <Clock className="h-4 w-4" />;
+      case "approved":
+        return <CheckCircle className="h-4 w-4" />;
+      case "paid":
+        return <CheckCircle className="h-4 w-4" />;
+      default:
+        return <AlertCircle className="h-4 w-4" />;
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'brief_sent': return 'Brief Sent';
-      case 'content_submitted': return 'Content Submitted';
-      case 'approved': return 'Approved';
-      case 'paid': return 'Paid';
-      default: return status;
+      case "brief_sent":
+        return "Brief Sent";
+      case "content_submitted":
+        return "Content Submitted";
+      case "approved":
+        return "Approved";
+      case "paid":
+        return "Paid";
+      default:
+        return status;
     }
   };
 
@@ -169,12 +199,14 @@ export default function JobTracking() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Job Tracking</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Job Tracking
+          </h1>
           <p className="text-gray-600">
             Monitor your ongoing projects and deliverables.
           </p>
         </div>
-        
+
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -193,23 +225,25 @@ export default function JobTracking() {
                   id="title"
                   placeholder="e.g., Instagram Reel for Summer Campaign"
                   value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   placeholder="Describe the job requirements and deliverables..."
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
                   rows={3}
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="campaignId">Campaign ID</Label>
@@ -217,7 +251,9 @@ export default function JobTracking() {
                     id="campaignId"
                     placeholder="e.g., CAMP-2024-001"
                     value={formData.campaignId}
-                    onChange={(e) => handleInputChange('campaignId', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("campaignId", e.target.value)
+                    }
                   />
                 </div>
                 <div>
@@ -226,21 +262,23 @@ export default function JobTracking() {
                     id="dueDate"
                     type="date"
                     value={formData.dueDate}
-                    onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("dueDate", e.target.value)
+                    }
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end space-x-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsCreateModalOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={createWorkItemMutation.isPending}
                 >
                   {createWorkItemMutation.isPending ? (
@@ -274,15 +312,17 @@ export default function JobTracking() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">In Progress</p>
                 <p className="text-2xl font-bold">
-                  {workItems?.filter((item: any) => 
-                    item.status === 'brief_sent' || item.status === 'content_submitted'
+                  {workItems?.filter(
+                    (item: any) =>
+                      item.status === "brief_sent" ||
+                      item.status === "content_submitted",
                   ).length || 0}
                 </p>
               </div>
@@ -290,15 +330,16 @@ export default function JobTracking() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Completed</p>
                 <p className="text-2xl font-bold">
-                  {workItems?.filter((item: any) => 
-                    item.status === 'approved' || item.status === 'paid'
+                  {workItems?.filter(
+                    (item: any) =>
+                      item.status === "approved" || item.status === "paid",
                   ).length || 0}
                 </p>
               </div>
@@ -306,16 +347,19 @@ export default function JobTracking() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Overdue</p>
                 <p className="text-2xl font-bold">
-                  {workItems?.filter((item: any) => 
-                    item.dueDate && isOverdue(item.dueDate) && 
-                    item.status !== 'approved' && item.status !== 'paid'
+                  {workItems?.filter(
+                    (item: any) =>
+                      item.dueDate &&
+                      isOverdue(item.dueDate) &&
+                      item.status !== "approved" &&
+                      item.status !== "paid",
                   ).length || 0}
                 </p>
               </div>
@@ -335,7 +379,9 @@ export default function JobTracking() {
                   <div className="flex items-center space-x-3">
                     {getStatusIcon(item.status)}
                     <div>
-                      <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                      <h3 className="font-semibold text-gray-900">
+                        {item.title}
+                      </h3>
                       <p className="text-sm text-gray-600">
                         {item.campaignId && `Campaign: ${item.campaignId} • `}
                         Created {new Date(item.createdAt).toLocaleDateString()}
@@ -347,46 +393,54 @@ export default function JobTracking() {
                       {getStatusLabel(item.status)}
                     </Badge>
                     {item.dueDate && (
-                      <div className={`text-sm ${isOverdue(item.dueDate) ? 'text-red-600' : 'text-gray-600'}`}>
+                      <div
+                        className={`text-sm ${isOverdue(item.dueDate) ? "text-red-600" : "text-gray-600"}`}
+                      >
                         <Calendar className="h-4 w-4 inline mr-1" />
                         Due: {new Date(item.dueDate).toLocaleDateString()}
                       </div>
                     )}
                   </div>
                 </div>
-                
+
                 <p className="text-gray-700 mb-4">{item.description}</p>
-                
+
                 <div className="flex justify-between items-center">
                   <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => setSelectedJob(item)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
                       View
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
-                      onClick={() => {/* Handle edit */}}
+                      onClick={() => {
+                        /* Handle edit */
+                      }}
                     >
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
                   </div>
-                  
+
                   <Select
                     value={item.status}
-                    onValueChange={(newStatus) => handleStatusUpdate(item.id, newStatus)}
+                    onValueChange={(newStatus) =>
+                      handleStatusUpdate(item.id, newStatus)
+                    }
                   >
                     <SelectTrigger className="w-48">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="brief_sent">Brief Sent</SelectItem>
-                      <SelectItem value="content_submitted">Content Submitted</SelectItem>
+                      <SelectItem value="content_submitted">
+                        Content Submitted
+                      </SelectItem>
                       <SelectItem value="approved">Approved</SelectItem>
                       <SelectItem value="paid">Paid</SelectItem>
                     </SelectContent>
@@ -399,7 +453,9 @@ export default function JobTracking() {
           <Card>
             <CardContent className="p-8 text-center">
               <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs yet</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No jobs yet
+              </h3>
               <p className="text-gray-600 mb-4">
                 Create your first job to start tracking your work progress.
               </p>

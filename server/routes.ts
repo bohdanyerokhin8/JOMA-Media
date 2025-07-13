@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupSession, setupPassport, setupAuthRoutes } from "./googleAuth";
 import { registerUser, isAuthenticated } from "./auth";
-import { insertPaymentRequestSchema, insertWorkItemSchema, insertInfluencerProfileSchema, registerUserSchema } from "@shared/schema";
+import { insertPaymentRequestSchema, insertWorkItemSchema, insertInfluencerProfileSchema, insertAdminInviteSchema, registerUserSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from 'multer';
 import path from 'path';
@@ -310,6 +310,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error uploading profile image:", error);
       res.status(500).json({ message: "Failed to upload profile image" });
+    }
+  });
+
+  // Admin Invite Routes
+  app.get('/api/admin/invites', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const invites = await storage.getAllAdminInvites();
+      res.json(invites);
+    } catch (error) {
+      console.error("Error fetching admin invites:", error);
+      res.status(500).json({ message: "Failed to fetch admin invites" });
+    }
+  });
+
+  app.post('/api/admin/invites', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const validatedData = insertAdminInviteSchema.parse(req.body);
+      
+      // Check if email already exists as an invite
+      const existingInvite = await storage.getAdminInviteByEmail(validatedData.email);
+      if (existingInvite) {
+        return res.status(409).json({ message: "An invite already exists for this email address" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        return res.status(409).json({ message: "A user with this email already exists" });
+      }
+
+      const invite = await storage.createAdminInvite(validatedData);
+      res.status(201).json(invite);
+    } catch (error) {
+      console.error("Error creating admin invite:", error);
+      res.status(400).json({ message: "Failed to create admin invite" });
+    }
+  });
+
+  app.delete('/api/admin/invites/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      await storage.deleteAdminInvite(id);
+      res.json({ message: "Admin invite deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting admin invite:", error);
+      res.status(500).json({ message: "Failed to delete admin invite" });
     }
   });
 

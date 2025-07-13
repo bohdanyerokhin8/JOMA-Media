@@ -27,6 +27,26 @@ export async function registerUser(userData: any): Promise<AuthUser> {
     }
   }
 
+  // Check for admin invite
+  const adminInvite = await storage.getAdminInviteByEmail(validatedData.email);
+  let userRole = validatedData.role || "influencer";
+  
+  if (adminInvite) {
+    // Check if all required fields match the invite
+    if (adminInvite.firstName && adminInvite.lastName && 
+        adminInvite.firstName === validatedData.firstName && 
+        adminInvite.lastName === validatedData.lastName) {
+      throw new Error("This email address is already registered. Please sign in instead.");
+    }
+    
+    // If email exists in admin invites but names don't match, allow signup with admin role
+    if (adminInvite.firstName && adminInvite.lastName && 
+        (adminInvite.firstName !== validatedData.firstName || 
+         adminInvite.lastName !== validatedData.lastName)) {
+      userRole = "admin";
+    }
+  }
+
   // Hash password
   const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
@@ -35,13 +55,18 @@ export async function registerUser(userData: any): Promise<AuthUser> {
     email: validatedData.email,
     firstName: validatedData.firstName,
     lastName: validatedData.lastName,
-    role: validatedData.role || "influencer",
+    role: userRole,
     hashedPassword,
     authProvider: "email",
     googleId: null,
     profileImageUrl: null,
     isActive: true,
   });
+
+  // If this was an admin invite, update the invite status
+  if (adminInvite && userRole === "admin") {
+    await storage.updateAdminInviteStatus(adminInvite.id, "accepted");
+  }
 
   return {
     id: user.id,

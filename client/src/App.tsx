@@ -13,6 +13,7 @@ import ProfileSettings from "@/pages/profile-settings";
 import PaymentRequests from "@/pages/payment-requests";
 import JobTracking from "@/pages/job-tracking";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminInvites from "@/pages/admin-invites";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 
 function Router() {
@@ -76,6 +77,12 @@ function Router() {
               <Route path="/admin/campaigns">
                 <DashboardLayout>
                   <div>Campaign Management (Coming Soon)</div>
+                </DashboardLayout>
+              </Route>
+              
+              <Route path="/admin/invites">
+                <DashboardLayout>
+                  <AdminInvites />
                 </DashboardLayout>
               </Route>
             </>

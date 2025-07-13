@@ -84,10 +84,22 @@ export const influencerProfiles = pgTable("influencer_profiles", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Admin Invites table
+export const adminInvites = pgTable("admin_invites", {
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").notNull().unique(),
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  status: varchar("status", { enum: ["pending", "accepted"] }).default("pending"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const upsertUserSchema = createInsertSchema(users);
 export const insertPaymentRequestSchema = createInsertSchema(paymentRequests).omit({ id: true, submittedAt: true, updatedAt: true });
 export const insertWorkItemSchema = createInsertSchema(workItems).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertInfluencerProfileSchema = createInsertSchema(influencerProfiles).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertAdminInviteSchema = createInsertSchema(adminInvites).omit({ id: true, createdAt: true, updatedAt: true });
 
 // Authentication schemas
 export const registerUserSchema = z.object({
@@ -111,5 +123,7 @@ export type InsertWorkItem = z.infer<typeof insertWorkItemSchema>;
 export type WorkItem = typeof workItems.$inferSelect;
 export type InsertInfluencerProfile = z.infer<typeof insertInfluencerProfileSchema>;
 export type InfluencerProfile = typeof influencerProfiles.$inferSelect;
+export type InsertAdminInvite = z.infer<typeof insertAdminInviteSchema>;
+export type AdminInvite = typeof adminInvites.$inferSelect;
 export type RegisterUser = z.infer<typeof registerUserSchema>;
 export type LoginUser = z.infer<typeof loginUserSchema>;

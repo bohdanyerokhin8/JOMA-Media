@@ -3,6 +3,7 @@ import {
   paymentRequests,
   workItems,
   influencerProfiles,
+  adminInvites,
   type User,
   type UpsertUser,
   type InsertPaymentRequest,
@@ -11,6 +12,8 @@ import {
   type WorkItem,
   type InsertInfluencerProfile,
   type InfluencerProfile,
+  type InsertAdminInvite,
+  type AdminInvite,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -43,6 +46,13 @@ export interface IStorage {
   getInfluencerProfileByUser(userId: string): Promise<InfluencerProfile | undefined>;
   updateInfluencerProfile(userId: string, profile: Partial<InsertInfluencerProfile>): Promise<InfluencerProfile>;
   getAllInfluencerProfiles(): Promise<(InfluencerProfile & { user: User })[]>;
+  
+  // Admin Invite operations
+  createAdminInvite(invite: InsertAdminInvite): Promise<AdminInvite>;
+  getAdminInviteByEmail(email: string): Promise<AdminInvite | undefined>;
+  getAllAdminInvites(): Promise<AdminInvite[]>;
+  updateAdminInviteStatus(id: string, status: string): Promise<AdminInvite>;
+  deleteAdminInvite(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -216,6 +226,48 @@ export class DatabaseStorage implements IStorage {
       ...result.influencer_profiles,
       user: result.users!,
     }));
+  }
+
+  // Admin Invite operations
+  async createAdminInvite(invite: InsertAdminInvite): Promise<AdminInvite> {
+    const [adminInvite] = await db
+      .insert(adminInvites)
+      .values({
+        id: nanoid(),
+        ...invite,
+      })
+      .returning();
+    return adminInvite;
+  }
+
+  async getAdminInviteByEmail(email: string): Promise<AdminInvite | undefined> {
+    const [invite] = await db
+      .select()
+      .from(adminInvites)
+      .where(eq(adminInvites.email, email));
+    return invite;
+  }
+
+  async getAllAdminInvites(): Promise<AdminInvite[]> {
+    return await db
+      .select()
+      .from(adminInvites)
+      .orderBy(desc(adminInvites.createdAt));
+  }
+
+  async updateAdminInviteStatus(id: string, status: string): Promise<AdminInvite> {
+    const [invite] = await db
+      .update(adminInvites)
+      .set({ status: status as any, updatedAt: new Date() })
+      .where(eq(adminInvites.id, id))
+      .returning();
+    return invite;
+  }
+
+  async deleteAdminInvite(id: string): Promise<void> {
+    await db
+      .delete(adminInvites)
+      .where(eq(adminInvites.id, id));
   }
 }
 
