@@ -32,19 +32,8 @@ export async function registerUser(userData: any): Promise<AuthUser> {
   let userRole = validatedData.role || "influencer";
   
   if (adminInvite) {
-    // Check if all required fields match the invite
-    if (adminInvite.firstName && adminInvite.lastName && 
-        adminInvite.firstName === validatedData.firstName && 
-        adminInvite.lastName === validatedData.lastName) {
-      throw new Error("This email address is already registered. Please sign in instead.");
-    }
-    
-    // If email exists in admin invites but names don't match, allow signup with admin role
-    if (adminInvite.firstName && adminInvite.lastName && 
-        (adminInvite.firstName !== validatedData.firstName || 
-         adminInvite.lastName !== validatedData.lastName)) {
-      userRole = "admin";
-    }
+    // If email exists in admin invites, allow signup with admin role
+    userRole = "admin";
   }
 
   // Hash password
