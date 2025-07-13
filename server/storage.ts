@@ -29,12 +29,14 @@ export interface IStorage {
   getPaymentRequestsByUser(userId: string): Promise<PaymentRequest[]>;
   getPaymentRequestById(id: string): Promise<PaymentRequest | undefined>;
   updatePaymentRequestStatus(id: string, status: string, adminNotes?: string): Promise<PaymentRequest>;
+  getAllPaymentRequests(): Promise<(PaymentRequest & { user: User })[]>;
   
   // Work Item operations
   createWorkItem(item: InsertWorkItem): Promise<WorkItem>;
   getWorkItemsByUser(userId: string): Promise<WorkItem[]>;
   getWorkItemById(id: string): Promise<WorkItem | undefined>;
   updateWorkItemStatus(id: string, status: string): Promise<WorkItem>;
+  getAllWorkItems(): Promise<(WorkItem & { user: User })[]>;
   
   // Influencer Profile operations
   createInfluencerProfile(profile: InsertInfluencerProfile): Promise<InfluencerProfile>;
@@ -117,6 +119,19 @@ export class DatabaseStorage implements IStorage {
     return request;
   }
 
+  async getAllPaymentRequests(): Promise<(PaymentRequest & { user: User })[]> {
+    const results = await db
+      .select()
+      .from(paymentRequests)
+      .leftJoin(users, eq(paymentRequests.userId, users.id))
+      .orderBy(desc(paymentRequests.submittedAt));
+    
+    return results.map(result => ({
+      ...result.payment_requests,
+      user: result.users!,
+    }));
+  }
+
   // Work Item operations
   async createWorkItem(item: InsertWorkItem): Promise<WorkItem> {
     const [workItem] = await db
@@ -149,6 +164,19 @@ export class DatabaseStorage implements IStorage {
       .where(eq(workItems.id, id))
       .returning();
     return item;
+  }
+
+  async getAllWorkItems(): Promise<(WorkItem & { user: User })[]> {
+    const results = await db
+      .select()
+      .from(workItems)
+      .leftJoin(users, eq(workItems.userId, users.id))
+      .orderBy(desc(workItems.createdAt));
+    
+    return results.map(result => ({
+      ...result.work_items,
+      user: result.users!,
+    }));
   }
 
   // Influencer Profile operations

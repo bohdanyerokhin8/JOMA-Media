@@ -6,6 +6,11 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
+- **Dashboard System with Sidebar Navigation (Jan 2025)**: Built comprehensive dashboard system with role-based access and URL-based navigation
+- **Role-Based Dashboard Routing (Jan 2025)**: Implemented separate dashboards for influencers and admins with appropriate role-based access control
+- **Fixed Checkbox Validation (Jan 2025)**: Resolved account creation issue with Radix UI checkbox validation using data-state attribute
+- **Complete API Routes (Jan 2025)**: Added all necessary API endpoints for payment requests, work items, profiles, and admin functionality
+- **Database Schema Updates (Jan 2025)**: Enhanced schema with proper role separation and all necessary tables for full functionality
 - **Public-Facing App Architecture (Jan 2025)**: Confirmed optimal setup for public access without Replit Auth requirement
 - **Google OAuth with Account Selection (Jan 2025)**: Added prompt=select_account for better multi-account user experience
 - **Google OAuth Authentication Complete (Jan 2025)**: Fully implemented Google OAuth 2.0 authentication with proper credential management and environment variable configuration
@@ -29,8 +34,10 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React with TypeScript
 - **Styling**: Tailwind CSS with shadcn/ui component library
 - **State Management**: TanStack Query for server state management
-- **Routing**: Wouter for client-side routing
+- **Routing**: Wouter for client-side routing with role-based route protection
 - **Build Tool**: Vite for development and production builds
+- **Dashboard System**: Sidebar-based navigation with URL-maintained state
+- **Layout Components**: Reusable dashboard layout with role-based content rendering
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express server

@@ -172,7 +172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Influencer Profile routes
-  app.post('/api/influencer-profile', isAuthenticated, async (req: any, res) => {
+  app.post('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const profileData = insertInfluencerProfileSchema.parse({ ...req.body, userId });
@@ -184,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/influencer-profile', isAuthenticated, async (req: any, res) => {
+  app.get('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const profile = await storage.getInfluencerProfileByUser(userId);
@@ -195,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/influencer-profile', isAuthenticated, async (req: any, res) => {
+  app.put('/api/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const profile = await storage.updateInfluencerProfile(userId, req.body);
@@ -218,6 +218,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching influencers:", error);
       res.status(500).json({ message: "Failed to fetch influencers" });
+    }
+  });
+
+  app.get('/api/admin/payment-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const paymentRequests = await storage.getAllPaymentRequests();
+      res.json(paymentRequests);
+    } catch (error) {
+      console.error("Error fetching all payment requests:", error);
+      res.status(500).json({ message: "Failed to fetch payment requests" });
+    }
+  });
+
+  app.get('/api/admin/work-items', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const workItems = await storage.getAllWorkItems();
+      res.json(workItems);
+    } catch (error) {
+      console.error("Error fetching all work items:", error);
+      res.status(500).json({ message: "Failed to fetch work items" });
+    }
+  });
+
+  app.put('/api/admin/payment-requests/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      const { status, adminNotes } = req.body;
+      const paymentRequest = await storage.updatePaymentRequestStatus(id, status, adminNotes);
+      res.json(paymentRequest);
+    } catch (error) {
+      console.error("Error updating payment request:", error);
+      res.status(400).json({ message: "Failed to update payment request" });
     }
   });
 
