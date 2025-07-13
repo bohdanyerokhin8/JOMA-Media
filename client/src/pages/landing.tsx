@@ -259,8 +259,8 @@ export default function Landing() {
     const isFirstNameValid = validateField("firstName", firstName);
     const isLastNameValid = validateField("lastName", lastName);
 
-    // Custom validation for checkbox
-    if (!termsCheckbox.checked) {
+    // Custom validation for checkbox (Radix UI checkbox uses data-state attribute)
+    if (!termsCheckbox || termsCheckbox.getAttribute('data-state') !== 'checked') {
       setShowCheckboxError(true);
       setTimeout(() => setShowCheckboxError(false), 4000);
       return;
@@ -685,7 +685,6 @@ export default function Landing() {
                           <button
                             type="button"
                             className="text-blue-600 hover:text-blue-500 underline"
-                            r
                           >
                             Terms of Service
                           </button>{" "}
