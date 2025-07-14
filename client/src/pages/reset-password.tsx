@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Lock, CheckCircle } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function ResetPassword() {
   const [, setLocation] = useLocation();
@@ -73,6 +73,9 @@ export default function ResetPassword() {
         password,
       });
       
+      // Invalidate the user cache to refresh authentication state
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
       setIsSuccess(true);
       
       toast({
@@ -81,10 +84,23 @@ export default function ResetPassword() {
         variant: "default",
       });
       
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        setLocation("/dashboard");
-      }, 2000);
+      // Wait for authentication state to sync, then redirect
+      setTimeout(async () => {
+        try {
+          // Check if user is authenticated before redirecting
+          const userResponse = await fetch("/api/auth/user", { credentials: "include" });
+          if (userResponse.ok) {
+            // User is authenticated, redirect to dashboard
+            window.location.href = "/dashboard";
+          } else {
+            // Authentication failed, redirect to login
+            window.location.href = "/?message=Please sign in again";
+          }
+        } catch (error) {
+          // Network error, try dashboard anyway
+          window.location.href = "/dashboard";
+        }
+      }, 1000);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to reset password";
@@ -116,7 +132,7 @@ export default function ResetPassword() {
               Your password has been successfully updated. You are now logged in.
             </p>
             <p className="text-sm text-gray-500">
-              Redirecting to dashboard...
+              Redirecting to dashboard in a moment...
             </p>
           </CardContent>
         </Card>

@@ -6,6 +6,8 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
+- **Fixed Password Reset Dashboard Redirect (Jan 2025)**: Enhanced password reset flow to properly handle authentication state after password reset - added cache invalidation, authentication verification, and improved redirect timing to ensure dashboard loads correctly
+- **Fixed Email Domain Configuration (Jan 2025)**: Updated email service to use custom domain (joma.violane.dev) for verification URLs instead of replit.app domain, ensuring consistent branding across all email communications
 - **Forgot Password Functionality (Jan 2025)**: Implemented complete password reset workflow with SparkPost email delivery - users can request password reset via email link, includes proper token validation, password update, and automatic login
 - **Enhanced Form Validation (Jan 2025)**: Fixed form validation cross-contamination between Sign In and Sign Up tabs with separate error states, improved checkbox validation to persist until user interaction
 - **Standard Email Verification System (Jan 2025)**: Implemented proper email verification workflow using SparkPost - users must verify email before sign-in, includes verification links, resend functionality, and account activation
