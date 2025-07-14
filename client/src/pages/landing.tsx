@@ -31,7 +31,10 @@ declare global {
 export default function Landing() {
   const [isLoading, setIsLoading] = useState(false);
   const [showCheckboxError, setShowCheckboxError] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<{
+  const [signInErrors, setSignInErrors] = useState<{
+    [key: string]: string;
+  }>({});
+  const [signUpErrors, setSignUpErrors] = useState<{
     [key: string]: string;
   }>({});
   const [verificationMessage, setVerificationMessage] = useState<{
@@ -84,7 +87,7 @@ export default function Landing() {
     </div>
   );
 
-  const validateField = (name: string, value: string) => {
+  const validateField = (name: string, value: string, formType: 'signIn' | 'signUp') => {
     const errors: { [key: string]: string } = {};
 
     switch (name) {
@@ -114,13 +117,17 @@ export default function Landing() {
         break;
     }
 
-    setValidationErrors((prev) => ({ ...prev, [name]: errors[name] || "" }));
+    if (formType === 'signIn') {
+      setSignInErrors((prev) => ({ ...prev, [name]: errors[name] || "" }));
+    } else {
+      setSignUpErrors((prev) => ({ ...prev, [name]: errors[name] || "" }));
+    }
     return !errors[name];
   };
 
-  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>, formType: 'signIn' | 'signUp') => {
     const { name, value } = e.target;
-    validateField(name, value);
+    validateField(name, value, formType);
   };
 
   // Clear loading state when user returns to the page (e.g., after navigating back from Google OAuth)
@@ -211,8 +218,8 @@ export default function Landing() {
     const password = formData.get("password") as string;
 
     // Custom validation
-    const isEmailValid = validateField("email", email);
-    const isPasswordValid = validateField("password", password);
+    const isEmailValid = validateField("email", email, 'signIn');
+    const isPasswordValid = validateField("password", password, 'signIn');
 
     if (!isEmailValid || !isPasswordValid) {
       return;
@@ -292,10 +299,10 @@ export default function Landing() {
     const lastName = formData.get("lastName") as string;
 
     // Custom validation
-    const isEmailValid = validateField("email", email);
-    const isPasswordValid = validateField("password", password);
-    const isFirstNameValid = validateField("firstName", firstName);
-    const isLastNameValid = validateField("lastName", lastName);
+    const isEmailValid = validateField("email", email, 'signUp');
+    const isPasswordValid = validateField("password", password, 'signUp');
+    const isFirstNameValid = validateField("firstName", firstName, 'signUp');
+    const isLastNameValid = validateField("lastName", lastName, 'signUp');
 
     // Custom validation for checkbox (Radix UI checkbox uses data-state attribute)
     if (!termsCheckbox || termsCheckbox.getAttribute('data-state') !== 'checked') {
@@ -565,13 +572,13 @@ export default function Landing() {
                           type="email"
                           className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                           placeholder="Enter your email"
-                          onChange={handleFieldChange}
-                          onBlur={handleFieldChange}
+                          onChange={(e) => handleFieldChange(e, 'signIn')}
+                          onBlur={(e) => handleFieldChange(e, 'signIn')}
                         />
                       </div>
-                      {validationErrors.email && (
+                      {signInErrors.email && (
                         <ValidationError
-                          message={validationErrors.email}
+                          message={signInErrors.email}
                           position="right"
                         />
                       )}
@@ -592,13 +599,13 @@ export default function Landing() {
                           type="password"
                           className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                           placeholder="Enter your password"
-                          onChange={handleFieldChange}
-                          onBlur={handleFieldChange}
+                          onChange={(e) => handleFieldChange(e, 'signIn')}
+                          onBlur={(e) => handleFieldChange(e, 'signIn')}
                         />
                       </div>
-                      {validationErrors.password && (
+                      {signInErrors.password && (
                         <ValidationError
-                          message={validationErrors.password}
+                          message={signInErrors.password}
                           position="right"
                         />
                       )}
@@ -700,13 +707,13 @@ export default function Landing() {
                             type="text"
                             className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                             placeholder="John"
-                            onChange={handleFieldChange}
-                            onBlur={handleFieldChange}
+                            onChange={(e) => handleFieldChange(e, 'signUp')}
+                            onBlur={(e) => handleFieldChange(e, 'signUp')}
                           />
                         </div>
-                        {validationErrors.firstName && (
+                        {signUpErrors.firstName && (
                           <ValidationError
-                            message={validationErrors.firstName}
+                            message={signUpErrors.firstName}
                             position="right"
                           />
                         )}
@@ -726,13 +733,13 @@ export default function Landing() {
                             type="text"
                             className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                             placeholder="Doe"
-                            onChange={handleFieldChange}
-                            onBlur={handleFieldChange}
+                            onChange={(e) => handleFieldChange(e, 'signUp')}
+                            onBlur={(e) => handleFieldChange(e, 'signUp')}
                           />
                         </div>
-                        {validationErrors.lastName && (
+                        {signUpErrors.lastName && (
                           <ValidationError
-                            message={validationErrors.lastName}
+                            message={signUpErrors.lastName}
                             position="right"
                           />
                         )}
@@ -754,13 +761,13 @@ export default function Landing() {
                           type="email"
                           className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                           placeholder="Enter your email"
-                          onChange={handleFieldChange}
-                          onBlur={handleFieldChange}
+                          onChange={(e) => handleFieldChange(e, 'signUp')}
+                          onBlur={(e) => handleFieldChange(e, 'signUp')}
                         />
                       </div>
-                      {validationErrors.email && (
+                      {signUpErrors.email && (
                         <ValidationError
-                          message={validationErrors.email}
+                          message={signUpErrors.email}
                           position="right"
                         />
                       )}
@@ -781,13 +788,13 @@ export default function Landing() {
                           type="password"
                           className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
                           placeholder="Create a password (min 8 characters)"
-                          onChange={handleFieldChange}
-                          onBlur={handleFieldChange}
+                          onChange={(e) => handleFieldChange(e, 'signUp')}
+                          onBlur={(e) => handleFieldChange(e, 'signUp')}
                         />
                       </div>
-                      {validationErrors.password && (
+                      {signUpErrors.password && (
                         <ValidationError
-                          message={validationErrors.password}
+                          message={signUpErrors.password}
                           position="right"
                         />
                       )}
