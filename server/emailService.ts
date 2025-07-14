@@ -2,7 +2,6 @@ import SparkPost from 'sparkpost';
 import { nanoid } from 'nanoid';
 
 const client = new SparkPost(process.env.SPARKPOST_API_KEY || 'e5e02b195fac863bc8277123dfa1aa681bfeda23');
-const validationClient = new SparkPost(process.env.SPARKPOST_RECIPIENT_VALIDATION_API_KEY || 'e5e02b195fac863bc8277123dfa1aa681bfeda23');
 
 export interface EmailVerificationData {
   email: string;
@@ -33,25 +32,7 @@ export class EmailService {
     return EmailService.instance;
   }
 
-  async checkEmailExists(email: string): Promise<boolean> {
-    try {
-      // Use SparkPost recipient validation API to check if email exists
-      const encodedEmail = encodeURIComponent(email);
-      const response = await validationClient.get({
-        uri: `/api/v1/recipient-validation/single/${encodedEmail}`
-      });
-      
-      // Check if the email is valid and deliverable
-      const validation = response.results;
-      
-      // Consider email valid if result is 'valid' and not undeliverable
-      return validation.valid === true && validation.result !== 'undeliverable';
-    } catch (error) {
-      console.error("Error checking email existence:", error);
-      // If we can't check, throw an error to prevent account creation
-      throw new Error("Unable to verify email address. Please try again later.");
-    }
-  }
+
 
   async sendEmail(options: EmailOptions): Promise<void> {
     try {

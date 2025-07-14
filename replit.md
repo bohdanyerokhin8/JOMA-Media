@@ -6,7 +6,7 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
-- **SparkPost Email Validation System (Jan 2025)**: Implemented email existence validation during sign-up using SparkPost Recipient Validation API - prevents account creation for invalid email addresses
+- **Standard Email Verification System (Jan 2025)**: Implemented proper email verification workflow using SparkPost - users must verify email before sign-in, includes verification links, resend functionality, and account activation
 - **SparkPost Integration (Jan 2025)**: Added SparkPost email service for verification emails, welcome emails, and password reset functionality with branded email templates
 - **Enhanced User Registration Flow (Jan 2025)**: Updated registration to require email verification before account activation, with proper error handling and user feedback
 - **Email Verification Routes (Jan 2025)**: Added /verify-email endpoint for token-based verification and /auth/resend-verification for resending verification emails
