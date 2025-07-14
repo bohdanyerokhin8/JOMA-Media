@@ -22,11 +22,10 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <>
+        <Switch>
           <Route path="/" component={Landing} />
           <Route path="/oauth-test" component={OAuthTest} />
-          <Route component={Landing} />
-        </>
+        </Switch>
       ) : (
         <>
           {/* Legacy home route - redirect to appropriate dashboard */}
