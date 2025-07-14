@@ -330,7 +330,17 @@ export default function Landing() {
     setShowCheckboxError(false);
     setIsLoading(true);
 
-    // Validate one field at a time and show only the first error
+    // Validate one field at a time and show only the first error (starting with first name)
+    if (!firstName) {
+      setSignUpErrors({ firstName: "First name is required" });
+      setIsLoading(false);
+      return;
+    }
+    if (!lastName) {
+      setSignUpErrors({ lastName: "Last name is required" });
+      setIsLoading(false);
+      return;
+    }
     if (!email) {
       setSignUpErrors({ email: "Email is required" });
       setIsLoading(false);
@@ -348,16 +358,6 @@ export default function Landing() {
     }
     if (password.length < 8) {
       setSignUpErrors({ password: "Password must be at least 8 characters" });
-      setIsLoading(false);
-      return;
-    }
-    if (!firstName) {
-      setSignUpErrors({ firstName: "First name is required" });
-      setIsLoading(false);
-      return;
-    }
-    if (!lastName) {
-      setSignUpErrors({ lastName: "Last name is required" });
       setIsLoading(false);
       return;
     }
