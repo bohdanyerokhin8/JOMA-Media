@@ -37,10 +37,21 @@ export async function registerUser(userData: any): Promise<AuthUser> {
     userRole = "admin";
   }
 
+  // Check if email exists using SparkPost
+  try {
+    const emailExists = await emailService.checkEmailExists(validatedData.email);
+    if (!emailExists) {
+      throw new Error("This email address is not verified or does not exist. Please use a valid email address.");
+    }
+  } catch (error) {
+    console.error("Error checking email existence:", error);
+    // Continue with registration if we can't check
+  }
+
   // Hash password
   const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
-  // Create user with email verification disabled initially
+  // Create user (no email verification required for sign-in)
   const user = await storage.createUser({
     email: validatedData.email,
     firstName: validatedData.firstName,
@@ -50,29 +61,9 @@ export async function registerUser(userData: any): Promise<AuthUser> {
     authProvider: "email",
     googleId: null,
     profileImageUrl: null,
-    isActive: false, // Set to false until email is verified
-    emailVerified: false,
+    isActive: true, // Set to true since we don't require email verification for sign-in
+    emailVerified: true, // Set to true since we don't require email verification for sign-in
   });
-
-  // Generate verification token and send email
-  const verificationToken = generateVerificationToken();
-  const expiresAt = getVerificationTokenExpiry();
-  
-  await storage.updateEmailVerificationToken(user.id, verificationToken, expiresAt);
-
-  // Send verification email
-  try {
-    const baseUrl = process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000';
-    await emailService.sendVerificationEmail({
-      email: user.email!,
-      firstName: user.firstName!,
-      verificationToken,
-      baseUrl,
-    });
-  } catch (error) {
-    console.error('Failed to send verification email:', error);
-    // Continue with registration but log the error
-  }
 
   // If this was an admin invite, update the invite status
   if (adminInvite && userRole === "admin") {
@@ -116,11 +107,6 @@ export async function loginUser(credentials: any): Promise<AuthUser> {
 
   if (!user.isActive) {
     throw new Error("Your account has been deactivated. Please contact support to reactivate your account.");
-  }
-
-  // Check if email is verified
-  if (!user.emailVerified) {
-    throw new Error("Please verify your email address before signing in. Check your email for the verification link.");
   }
 
   return {

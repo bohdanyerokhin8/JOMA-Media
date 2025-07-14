@@ -38,8 +38,6 @@ export default function Landing() {
     type: 'success' | 'error' | null;
     message: string;
   }>({ type: null, message: '' });
-  const [showResendSection, setShowResendSection] = useState(false);
-  const [resendEmail, setResendEmail] = useState('');
 
   const { toast } = useToast();
 
@@ -54,7 +52,6 @@ export default function Landing() {
         type: 'error',
         message: decodeURIComponent(message)
       });
-      setShowResendSection(true);
     }
     
     // Clean up URL parameters
@@ -256,15 +253,6 @@ export default function Landing() {
           variant: "destructive",
           duration: 6000,
         });
-      } else if (errorMessage.includes("verify your email")) {
-        toast({
-          title: "📧 Email verification required",
-          description: "Please check your email and click the verification link before signing in.",
-          variant: "destructive",
-          duration: 8000,
-        });
-        setShowResendSection(true);
-        setResendEmail(email);
       } else {
         toast({
           title: "❌ Sign in failed",
@@ -325,15 +313,9 @@ export default function Landing() {
       });
 
       toast({
-        title: "✅ Account created successfully",
-        description: "Please check your email to verify your account before signing in.",
+        title: "✅ Account created successfully!",
+        description: "You can now sign in with your email and password.",
         variant: "default",
-      });
-      
-      // Show success message for verification
-      setVerificationMessage({
-        type: 'success',
-        message: 'Account created successfully! Please check your email to verify your account before signing in.'
       });
       
       // Switch to login tab
@@ -362,6 +344,14 @@ export default function Landing() {
           variant: "destructive",
           duration: 6000,
         });
+      } else if (errorMessage.includes("not verified or does not exist")) {
+        toast({
+          title: "⚠️ Email not verified",
+          description:
+            "This email address is not verified or does not exist. Please use a valid email address.",
+          variant: "destructive",
+          duration: 6000,
+        });
       } else {
         toast({
           title: "❌ Registration failed",
@@ -376,39 +366,7 @@ export default function Landing() {
     }
   };
 
-  const handleResendVerification = async () => {
-    if (!resendEmail) return;
 
-    setIsLoading(true);
-    try {
-      await apiRequest("POST", "/auth/resend-verification", {
-        email: resendEmail,
-      });
-      
-      toast({
-        title: "✅ Verification email sent",
-        description: "Please check your email for the verification link.",
-        variant: "default",
-      });
-      
-      setShowResendSection(false);
-      setResendEmail('');
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to send verification email. Please try again.";
-      
-      toast({
-        title: "❌ Failed to send verification email",
-        description: errorMessage,
-        variant: "destructive",
-        duration: 6000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Loading overlay component
   const LoadingOverlay = () => (
@@ -461,25 +419,7 @@ export default function Landing() {
             </Alert>
           )}
 
-          {/* Resend Verification Section */}
-          {showResendSection && (
-            <Alert className="border-blue-200 bg-blue-50">
-              <Mail className="h-4 w-4 text-blue-600 mr-2" />
-              <AlertDescription className="text-blue-800">
-                <div className="flex items-center justify-between">
-                  <span>Need to resend the verification email?</span>
-                  <Button
-                    onClick={handleResendVerification}
-                    variant="outline"
-                    size="sm"
-                    className="ml-2 text-blue-600 border-blue-600 hover:bg-blue-100"
-                  >
-                    Resend Email
-                  </Button>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
+
 
           {/* Authentication Card */}
           <Card className="shadow-2xl rounded-2xl border-0">

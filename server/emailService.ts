@@ -32,11 +32,25 @@ export class EmailService {
     return EmailService.instance;
   }
 
+  async checkEmailExists(email: string): Promise<boolean> {
+    try {
+      // Use SparkPost recipient validation API to check if email exists
+      const response = await this.sparkPost.recipientValidation.single(email);
+      
+      // Check if the email is deliverable
+      return response.results && response.results.deliverable === true;
+    } catch (error) {
+      console.error("Error checking email existence:", error);
+      // If we can't check, assume email exists to allow registration
+      return true;
+    }
+  }
+
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
       const response = await this.sparkPost.transmissions.send({
         content: {
-          from: 'noreply@joma-media.com',
+          from: 'noreply@sparkpostbox.com', // Use SparkPost's default sandbox domain
           subject: options.subject,
           html: options.html,
           text: options.text || options.html.replace(/<[^>]*>/g, ''),
