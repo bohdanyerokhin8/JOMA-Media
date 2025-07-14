@@ -1,7 +1,8 @@
 import SparkPost from 'sparkpost';
 import { nanoid } from 'nanoid';
 
-const client = new SparkPost('e5e02b195fac863bc8277123dfa1aa681bfeda23');
+const client = new SparkPost(process.env.SPARKPOST_API_KEY || 'e5e02b195fac863bc8277123dfa1aa681bfeda23');
+const validationClient = new SparkPost(process.env.SPARKPOST_RECIPIENT_VALIDATION_API_KEY || 'e5e02b195fac863bc8277123dfa1aa681bfeda23');
 
 export interface EmailVerificationData {
   email: string;
@@ -36,7 +37,7 @@ export class EmailService {
     try {
       // Use SparkPost recipient validation API to check if email exists
       const encodedEmail = encodeURIComponent(email);
-      const response = await this.sparkPost.get({
+      const response = await validationClient.get({
         uri: `/api/v1/recipient-validation/single/${encodedEmail}`
       });
       
