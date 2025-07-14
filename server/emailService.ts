@@ -37,7 +37,10 @@ export class EmailService {
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
       const sendingDomain = process.env.SPARKPOST_SENDING_DOMAIN || 'sparkpostbox.com';
+      console.log('Using sending domain:', sendingDomain);
+      
       const fromEmail = sendingDomain === 'sandbox' ? 'testing@sparkpostbox.com' : `noreply@${sendingDomain}`;
+      console.log('From email:', fromEmail);
       
       const transmissionOptions: any = {
         content: {
@@ -52,6 +55,7 @@ export class EmailService {
       // Use sandbox mode if domain is 'sandbox'
       if (sendingDomain === 'sandbox') {
         transmissionOptions.options = { sandbox: true };
+        console.log('Using sandbox mode');
       }
 
       const response = await this.sparkPost.transmissions.send(transmissionOptions);
