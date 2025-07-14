@@ -307,7 +307,6 @@ export default function Landing() {
     // Custom validation for checkbox (Radix UI checkbox uses data-state attribute)
     if (!termsCheckbox || termsCheckbox.getAttribute('data-state') !== 'checked') {
       setShowCheckboxError(true);
-      setTimeout(() => setShowCheckboxError(false), 4000);
       return;
     }
 
@@ -802,7 +801,14 @@ export default function Landing() {
 
                     <div className="relative" style={{ marginTop: "25px" }}>
                       <div className="flex items-center space-x-2">
-                        <Checkbox id="terms" />
+                        <Checkbox 
+                          id="terms" 
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setShowCheckboxError(false);
+                            }
+                          }}
+                        />
                         <Label
                           htmlFor="terms"
                           className="text-sm text-gray-600"
