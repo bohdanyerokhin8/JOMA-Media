@@ -43,6 +43,8 @@ export default function Landing() {
   }>({ type: null, message: '' });
   const [showResendSection, setShowResendSection] = useState(false);
   const [resendEmail, setResendEmail] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
 
   const { toast } = useToast();
 
@@ -418,6 +420,46 @@ export default function Landing() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!forgotPasswordEmail) {
+      toast({
+        title: "❌ Email required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      await apiRequest("POST", "/auth/forgot-password", {
+        email: forgotPasswordEmail
+      });
+      
+      toast({
+        title: "✅ Password reset email sent",
+        description: "Please check your email for the password reset link.",
+        variant: "default",
+        duration: 6000,
+      });
+      
+      setShowForgotPassword(false);
+      setForgotPasswordEmail('');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to send password reset email";
+      toast({
+        title: "❌ Password reset failed",
+        description: errorMessage,
+        variant: "destructive",
+        duration: 6000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Loading overlay component
   const LoadingOverlay = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -622,6 +664,7 @@ export default function Landing() {
                       </div>
                       <button
                         type="button"
+                        onClick={() => setShowForgotPassword(true)}
                         className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors duration-200"
                       >
                         Forgot password?
@@ -865,6 +908,67 @@ export default function Landing() {
           </Card>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPassword && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="w-full max-w-md mx-4 shadow-lg">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Lock className="w-6 h-6 text-blue-600" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-gray-900">
+                Forgot Password
+              </CardTitle>
+              <p className="text-gray-600 mt-2">
+                Enter your email address and we'll send you a link to reset your password.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email" className="text-sm font-medium text-gray-700">
+                    Email Address
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <Input
+                      id="forgot-email"
+                      type="email"
+                      value={forgotPasswordEmail}
+                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                      className="pl-10 py-3 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Enter your email address"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setForgotPasswordEmail('');
+                    }}
+                    className="flex-1 py-3"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all duration-200"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Sending..." : "Send Reset Link"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </>
   );
 }

@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { registerUserSchema, loginUserSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
-import { emailService, generateVerificationToken, getVerificationTokenExpiry, isVerificationTokenExpired } from "./emailService";
+import { emailService, generateVerificationToken, getVerificationTokenExpiry, isVerificationTokenExpired, generatePasswordResetToken, getPasswordResetTokenExpiry, isPasswordResetTokenExpired } from "./emailService";
 
 export interface AuthUser {
   id: string;
@@ -202,6 +202,56 @@ export async function resendVerificationEmail(email: string): Promise<void> {
     verificationToken,
     baseUrl,
   });
+}
+
+// Password Reset Functions
+export async function requestPasswordReset(email: string): Promise<void> {
+  const user = await storage.getUserByEmail(email);
+  
+  if (!user) {
+    throw new Error("No account found with this email address.");
+  }
+
+  if (user.authProvider !== "email") {
+    throw new Error("This account uses Google sign-in. Please use the 'Sign in with Google' button.");
+  }
+
+  // Generate password reset token
+  const resetToken = generatePasswordResetToken();
+  const expiresAt = getPasswordResetTokenExpiry();
+  
+  await storage.updatePasswordResetToken(user.id, resetToken, expiresAt);
+
+  // Send password reset email
+  const baseUrl = process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000';
+  await emailService.sendPasswordResetEmail(user.email!, user.firstName!, resetToken, baseUrl);
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<AuthUser> {
+  const user = await storage.getUserByPasswordResetToken(token);
+  
+  if (!user) {
+    throw new Error("Invalid or expired password reset token.");
+  }
+
+  if (!user.passwordResetExpires || isPasswordResetTokenExpired(user.passwordResetExpires)) {
+    throw new Error("Password reset token has expired. Please request a new one.");
+  }
+
+  // Hash the new password
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  
+  // Update user's password and clear reset token
+  const updatedUser = await storage.updatePassword(user.id, hashedPassword);
+
+  return {
+    id: updatedUser.id,
+    email: updatedUser.email!,
+    firstName: updatedUser.firstName!,
+    lastName: updatedUser.lastName!,
+    role: updatedUser.role!,
+    authProvider: updatedUser.authProvider!,
+  };
 }
 
 // Google OAuth Authentication

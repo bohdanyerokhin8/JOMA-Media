@@ -33,6 +33,12 @@ export interface IStorage {
   markEmailAsVerified(userId: string): Promise<User>;
   clearVerificationToken(userId: string): Promise<void>;
   
+  // Password reset operations
+  updatePasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<void>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
+  updatePassword(userId: string, hashedPassword: string): Promise<User>;
+  clearPasswordResetToken(userId: string): Promise<void>;
+  
   // Payment Request operations
   createPaymentRequest(request: InsertPaymentRequest): Promise<PaymentRequest>;
   getPaymentRequestsByUser(userId: string): Promise<PaymentRequest[]>;
@@ -332,6 +338,48 @@ export class DatabaseStorage implements IStorage {
       .set({
         emailVerificationToken: null,
         emailVerificationExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updatePasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<void> {
+    await db.update(users)
+      .set({
+        passwordResetToken: token,
+        passwordResetExpires: expiresAt,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.passwordResetToken, token));
+    return user || undefined;
+  }
+
+  async updatePassword(userId: string, hashedPassword: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async clearPasswordResetToken(userId: string): Promise<void> {
+    await db.update(users)
+      .set({
+        passwordResetToken: null,
+        passwordResetExpires: null,
         updatedAt: new Date()
       })
       .where(eq(users.id, userId));

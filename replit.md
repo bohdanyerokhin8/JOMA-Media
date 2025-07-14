@@ -6,6 +6,8 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
+- **Forgot Password Functionality (Jan 2025)**: Implemented complete password reset workflow with SparkPost email delivery - users can request password reset via email link, includes proper token validation, password update, and automatic login
+- **Enhanced Form Validation (Jan 2025)**: Fixed form validation cross-contamination between Sign In and Sign Up tabs with separate error states, improved checkbox validation to persist until user interaction
 - **Standard Email Verification System (Jan 2025)**: Implemented proper email verification workflow using SparkPost - users must verify email before sign-in, includes verification links, resend functionality, and account activation
 - **SparkPost Integration (Jan 2025)**: Added SparkPost email service for verification emails, welcome emails, and password reset functionality with branded email templates
 - **Enhanced User Registration Flow (Jan 2025)**: Updated registration to require email verification before account activation, with proper error handling and user feedback

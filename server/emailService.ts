@@ -247,3 +247,20 @@ export function getVerificationTokenExpiry(): Date {
   expiry.setHours(expiry.getHours() + 24);
   return expiry;
 }
+
+// Utility function to generate password reset token
+export function generatePasswordResetToken(): string {
+  return nanoid(32);
+}
+
+// Utility function to check if password reset token is expired
+export function isPasswordResetTokenExpired(expiresAt: Date): boolean {
+  return new Date() > expiresAt;
+}
+
+// Utility function to get password reset token expiry (1 hour from now)
+export function getPasswordResetTokenExpiry(): Date {
+  const expiry = new Date();
+  expiry.setHours(expiry.getHours() + 1);
+  return expiry;
+}

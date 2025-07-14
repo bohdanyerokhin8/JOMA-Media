@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupSession, setupPassport, setupAuthRoutes } from "./googleAuth";
-import { registerUser, isAuthenticated, verifyEmail, resendVerificationEmail } from "./auth";
+import { registerUser, isAuthenticated, verifyEmail, resendVerificationEmail, requestPasswordReset, resetPassword } from "./auth";
 import { insertPaymentRequestSchema, insertWorkItemSchema, insertInfluencerProfileSchema, insertAdminInviteSchema, registerUserSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from 'multer';
@@ -103,35 +103,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reset password endpoint (for development/testing)
+  // Password reset endpoints
+  app.post('/auth/forgot-password', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+      
+      await requestPasswordReset(email);
+      res.json({ message: 'Password reset email sent successfully' });
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      res.status(400).json({ message: (error as Error).message });
+    }
+  });
+
   app.post('/auth/reset-password', async (req, res) => {
     try {
-      const { email, newPassword } = req.body;
+      const { token, password } = req.body;
       
-      if (!email || !newPassword) {
-        return res.status(400).json({ message: 'Email and new password are required' });
+      if (!token || !password) {
+        return res.status(400).json({ message: 'Token and password are required' });
       }
-
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      // Hash the new password
-      const bcrypt = await import('bcryptjs');
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
       
-      // Update the user's password
-      await storage.upsertUser({
-        ...user,
-        hashedPassword,
-        updatedAt: new Date(),
+      if (password.length < 8) {
+        return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+      }
+      
+      const user = await resetPassword(token, password);
+      
+      // Log the user in after successful password reset
+      req.login(user, (err) => {
+        if (err) {
+          console.error('Login after password reset failed:', err);
+          return res.status(500).json({ message: 'Password reset successful but login failed. Please try signing in manually.' });
+        }
+        
+        res.json({ message: 'Password reset successful', user });
       });
-
-      res.json({ message: 'Password reset successfully' });
     } catch (error) {
       console.error("Password reset error:", error);
-      res.status(500).json({ message: 'Failed to reset password' });
+      res.status(400).json({ message: (error as Error).message });
     }
   });
 

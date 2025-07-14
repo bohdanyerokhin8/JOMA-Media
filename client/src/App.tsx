@@ -14,6 +14,7 @@ import PaymentRequests from "@/pages/payment-requests";
 import JobTracking from "@/pages/job-tracking";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminInvites from "@/pages/admin-invites";
+import ResetPassword from "@/pages/reset-password";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
         <Switch>
           <Route path="/" component={Landing} />
           <Route path="/oauth-test" component={OAuthTest} />
+          <Route path="/reset-password" component={ResetPassword} />
         </Switch>
       ) : (
         <>
