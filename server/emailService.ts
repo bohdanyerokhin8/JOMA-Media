@@ -36,16 +36,25 @@ export class EmailService {
 
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
-      const response = await this.sparkPost.transmissions.send({
+      const sendingDomain = process.env.SPARKPOST_SENDING_DOMAIN || 'sparkpostbox.com';
+      const fromEmail = sendingDomain === 'sandbox' ? 'testing@sparkpostbox.com' : `noreply@${sendingDomain}`;
+      
+      const transmissionOptions: any = {
         content: {
-          from: 'noreply@sparkpostbox.com', // Use SparkPost's default sandbox domain
+          from: fromEmail,
           subject: options.subject,
           html: options.html,
           text: options.text || options.html.replace(/<[^>]*>/g, ''),
         },
         recipients: [{ address: options.to }],
-      });
+      };
 
+      // Use sandbox mode if domain is 'sandbox'
+      if (sendingDomain === 'sandbox') {
+        transmissionOptions.options = { sandbox: true };
+      }
+
+      const response = await this.sparkPost.transmissions.send(transmissionOptions);
       console.log('Email sent successfully:', response);
     } catch (error) {
       console.error('Error sending email:', error);
