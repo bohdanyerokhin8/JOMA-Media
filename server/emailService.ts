@@ -35,14 +35,20 @@ export class EmailService {
   async checkEmailExists(email: string): Promise<boolean> {
     try {
       // Use SparkPost recipient validation API to check if email exists
-      const response = await this.sparkPost.recipientValidation.single(email);
+      const encodedEmail = encodeURIComponent(email);
+      const response = await this.sparkPost.get({
+        uri: `/api/v1/recipient-validation/single/${encodedEmail}`
+      });
       
-      // Check if the email is deliverable
-      return response.results && response.results.deliverable === true;
+      // Check if the email is valid and deliverable
+      const validation = response.results;
+      
+      // Consider email valid if result is 'valid' and not undeliverable
+      return validation.valid === true && validation.result !== 'undeliverable';
     } catch (error) {
       console.error("Error checking email existence:", error);
-      // If we can't check, assume email exists to allow registration
-      return true;
+      // If we can't check, throw an error to prevent account creation
+      throw new Error("Unable to verify email address. Please try again later.");
     }
   }
 

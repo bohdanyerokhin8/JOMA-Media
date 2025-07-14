@@ -352,6 +352,14 @@ export default function Landing() {
           variant: "destructive",
           duration: 6000,
         });
+      } else if (errorMessage.includes("Unable to verify email address")) {
+        toast({
+          title: "⚠️ Email verification failed",
+          description:
+            "Unable to verify your email address. Please try again later.",
+          variant: "destructive",
+          duration: 6000,
+        });
       } else {
         toast({
           title: "❌ Registration failed",

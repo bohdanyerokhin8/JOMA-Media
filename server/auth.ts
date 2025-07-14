@@ -37,15 +37,10 @@ export async function registerUser(userData: any): Promise<AuthUser> {
     userRole = "admin";
   }
 
-  // Check if email exists using SparkPost
-  try {
-    const emailExists = await emailService.checkEmailExists(validatedData.email);
-    if (!emailExists) {
-      throw new Error("This email address is not verified or does not exist. Please use a valid email address.");
-    }
-  } catch (error) {
-    console.error("Error checking email existence:", error);
-    // Continue with registration if we can't check
+  // Check if email exists using SparkPost - MUST pass before creating account
+  const emailExists = await emailService.checkEmailExists(validatedData.email);
+  if (!emailExists) {
+    throw new Error("This email address is not verified or does not exist. Please use a valid email address.");
   }
 
   // Hash password
