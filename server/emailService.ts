@@ -37,9 +37,10 @@ export class EmailService {
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
       const sendingDomain = process.env.SPARKPOST_SENDING_DOMAIN || 'sparkpostbox.com';
-      console.log('Using sending domain:', sendingDomain);
+      const fromEmail = process.env.SPARKPOST_FROM_EMAIL || 
+                       (sendingDomain === 'sandbox' ? 'testing@sparkpostbox.com' : `noreply@${sendingDomain}`);
       
-      const fromEmail = sendingDomain === 'sandbox' ? 'testing@sparkpostbox.com' : `noreply@${sendingDomain}`;
+      console.log('Using sending domain:', sendingDomain);
       console.log('From email:', fromEmail);
       
       const transmissionOptions: any = {
@@ -62,6 +63,7 @@ export class EmailService {
       console.log('Email sent successfully:', response);
     } catch (error) {
       console.error('Error sending email:', error);
+      console.error('Error details:', error.errors || error.message);
       throw new Error('Failed to send email');
     }
   }
