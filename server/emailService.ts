@@ -36,10 +36,13 @@ export class EmailService {
 
   async sendEmail(options: EmailOptions): Promise<void> {
     try {
-      const sendingDomain = process.env.SPARKPOST_SENDING_DOMAIN || 'sparkpostbox.com';
+      // Clean up the domain in case it has whitespace or newlines
+      const rawDomain = process.env.SPARKPOST_SENDING_DOMAIN || 'sparkpostbox.com';
+      const sendingDomain = rawDomain.trim();
       const fromEmail = process.env.SPARKPOST_FROM_EMAIL || 
                        (sendingDomain === 'sandbox' ? 'testing@sparkpostbox.com' : `noreply@${sendingDomain}`);
       
+      console.log('Raw domain from env:', JSON.stringify(rawDomain));
       console.log('Using sending domain:', sendingDomain);
       console.log('From email:', fromEmail);
       
