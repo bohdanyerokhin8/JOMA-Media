@@ -38,6 +38,8 @@ export default function Landing() {
     type: 'success' | 'error' | null;
     message: string;
   }>({ type: null, message: '' });
+  const [showResendSection, setShowResendSection] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
 
   const { toast } = useToast();
 
