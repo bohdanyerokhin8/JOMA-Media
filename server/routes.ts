@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupSession, setupPassport, setupAuthRoutes } from "./googleAuth";
-import { registerUser, isAuthenticated } from "./auth";
+import { registerUser, isAuthenticated, verifyEmail, resendVerificationEmail } from "./auth";
 import { insertPaymentRequestSchema, insertWorkItemSchema, insertInfluencerProfileSchema, insertAdminInviteSchema, registerUserSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from 'multer';
@@ -34,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/auth/register', async (req, res) => {
     try {
       const user = await registerUser(req.body);
-      res.status(201).json({ message: 'Account created successfully! You can now sign in with your email and password.', user });
+      res.status(201).json({ message: 'Account created successfully! Please check your email to verify your account before signing in.', user });
     } catch (error) {
       console.error("Registration error:", error);
       
@@ -50,6 +50,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.status(statusCode).json({ message: errorMessage });
+    }
+  });
+
+  // Email verification endpoint
+  app.get('/verify-email', async (req, res) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: 'Verification token is required' });
+      }
+
+      const user = await verifyEmail(token);
+      
+      // Log the user in after successful verification
+      req.login(user, (err) => {
+        if (err) {
+          console.error('Login after verification failed:', err);
+          return res.status(500).json({ message: 'Email verified but login failed. Please try signing in manually.' });
+        }
+        
+        // Redirect to dashboard
+        res.redirect('/dashboard');
+      });
+      
+    } catch (error) {
+      console.error("Email verification error:", error);
+      const errorMessage = (error as Error).message;
+      
+      // For frontend handling, we'll redirect to a verification error page
+      res.redirect(`/?verification=error&message=${encodeURIComponent(errorMessage)}`);
+    }
+  });
+
+  // Resend verification email endpoint
+  app.post('/auth/resend-verification', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      await resendVerificationEmail(email);
+      res.json({ message: 'Verification email sent successfully! Please check your email.' });
+      
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      const errorMessage = (error as Error).message;
+      res.status(400).json({ message: errorMessage });
     }
   });
 

@@ -6,6 +6,11 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
+- **Email Verification System with SparkPost (Jan 2025)**: Implemented comprehensive email verification for user registration with professional HTML email templates, resend functionality, and automatic account activation
+- **SparkPost Integration (Jan 2025)**: Added SparkPost email service for verification emails, welcome emails, and password reset functionality with branded email templates
+- **Enhanced User Registration Flow (Jan 2025)**: Updated registration to require email verification before account activation, with proper error handling and user feedback
+- **Email Verification Routes (Jan 2025)**: Added /verify-email endpoint for token-based verification and /auth/resend-verification for resending verification emails
+- **Database Schema Email Fields (Jan 2025)**: Added emailVerified, emailVerificationToken, and emailVerificationExpires fields to users table
 - **Dashboard System with Sidebar Navigation (Jan 2025)**: Built comprehensive dashboard system with role-based access and URL-based navigation
 - **Role-Based Dashboard Routing (Jan 2025)**: Implemented separate dashboards for influencers and admins with appropriate role-based access control
 - **Fixed Checkbox Validation (Jan 2025)**: Resolved account creation issue with Radix UI checkbox validation using data-state attribute

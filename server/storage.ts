@@ -27,6 +27,12 @@ export interface IStorage {
   createUser(userData: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   
+  // Email verification operations
+  updateEmailVerificationToken(userId: string, token: string, expiresAt: Date): Promise<void>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  markEmailAsVerified(userId: string): Promise<User>;
+  clearVerificationToken(userId: string): Promise<void>;
+  
   // Payment Request operations
   createPaymentRequest(request: InsertPaymentRequest): Promise<PaymentRequest>;
   getPaymentRequestsByUser(userId: string): Promise<PaymentRequest[]>;
@@ -286,6 +292,49 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(adminInvites)
       .where(eq(adminInvites.id, id));
+  }
+
+  // Email verification methods
+  async updateEmailVerificationToken(userId: string, token: string, expiresAt: Date): Promise<void> {
+    await db.update(users)
+      .set({
+        emailVerificationToken: token,
+        emailVerificationExpires: expiresAt,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.emailVerificationToken, token));
+    return user || undefined;
+  }
+
+  async markEmailAsVerified(userId: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async clearVerificationToken(userId: string): Promise<void> {
+    await db.update(users)
+      .set({
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
   }
 }
 

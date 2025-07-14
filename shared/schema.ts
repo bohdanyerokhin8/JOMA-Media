@@ -36,6 +36,10 @@ export const users = pgTable("users", {
   hashedPassword: varchar("hashed_password"), // For email/password users
   authProvider: varchar("auth_provider", { enum: ["email", "google"] }).default("email"), // Track auth method
   googleId: varchar("google_id"), // For Google OAuth users
+  // Email verification fields
+  emailVerified: boolean("email_verified").default(false),
+  emailVerificationToken: varchar("email_verification_token"),
+  emailVerificationExpires: timestamp("email_verification_expires"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

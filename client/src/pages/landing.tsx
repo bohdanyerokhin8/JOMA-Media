@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -14,6 +15,8 @@ import {
   Mail,
   Lock,
   User,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -31,8 +34,34 @@ export default function Landing() {
   const [validationErrors, setValidationErrors] = useState<{
     [key: string]: string;
   }>({});
+  const [verificationMessage, setVerificationMessage] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
+  const [showResendSection, setShowResendSection] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
 
   const { toast } = useToast();
+
+  // Check URL parameters for verification status
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const verification = urlParams.get('verification');
+    const message = urlParams.get('message');
+    
+    if (verification === 'error' && message) {
+      setVerificationMessage({
+        type: 'error',
+        message: decodeURIComponent(message)
+      });
+      setShowResendSection(true);
+    }
+    
+    // Clean up URL parameters
+    if (verification) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   // Custom validation component
   const ValidationError = ({
@@ -227,6 +256,15 @@ export default function Landing() {
           variant: "destructive",
           duration: 6000,
         });
+      } else if (errorMessage.includes("verify your email")) {
+        toast({
+          title: "📧 Email verification required",
+          description: "Please check your email and click the verification link before signing in.",
+          variant: "destructive",
+          duration: 8000,
+        });
+        setShowResendSection(true);
+        setResendEmail(email);
       } else {
         toast({
           title: "❌ Sign in failed",
@@ -288,9 +326,16 @@ export default function Landing() {
 
       toast({
         title: "✅ Account created successfully",
-        description: "You can now sign in with your new account",
+        description: "Please check your email to verify your account before signing in.",
         variant: "default",
       });
+      
+      // Show success message for verification
+      setVerificationMessage({
+        type: 'success',
+        message: 'Account created successfully! Please check your email to verify your account before signing in.'
+      });
+      
       // Switch to login tab
       document.querySelector('[data-value="signin"]')?.click();
     } catch (error) {
@@ -331,6 +376,40 @@ export default function Landing() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!resendEmail) return;
+
+    setIsLoading(true);
+    try {
+      await apiRequest("POST", "/auth/resend-verification", {
+        email: resendEmail,
+      });
+      
+      toast({
+        title: "✅ Verification email sent",
+        description: "Please check your email for the verification link.",
+        variant: "default",
+      });
+      
+      setShowResendSection(false);
+      setResendEmail('');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send verification email. Please try again.";
+      
+      toast({
+        title: "❌ Failed to send verification email",
+        description: errorMessage,
+        variant: "destructive",
+        duration: 6000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Loading overlay component
   const LoadingOverlay = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -365,6 +444,42 @@ export default function Landing() {
               Connect with brands and manage your influencer career
             </p>
           </div>
+
+          {/* Verification Messages */}
+          {verificationMessage.type && (
+            <Alert className={`${verificationMessage.type === 'success' ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+              <div className="flex items-center">
+                {verificationMessage.type === 'success' ? (
+                  <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-red-600 mr-2" />
+                )}
+                <AlertDescription className={`${verificationMessage.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+                  {verificationMessage.message}
+                </AlertDescription>
+              </div>
+            </Alert>
+          )}
+
+          {/* Resend Verification Section */}
+          {showResendSection && (
+            <Alert className="border-blue-200 bg-blue-50">
+              <Mail className="h-4 w-4 text-blue-600 mr-2" />
+              <AlertDescription className="text-blue-800">
+                <div className="flex items-center justify-between">
+                  <span>Need to resend the verification email?</span>
+                  <Button
+                    onClick={handleResendVerification}
+                    variant="outline"
+                    size="sm"
+                    className="ml-2 text-blue-600 border-blue-600 hover:bg-blue-100"
+                  >
+                    Resend Email
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Authentication Card */}
           <Card className="shadow-2xl rounded-2xl border-0">
