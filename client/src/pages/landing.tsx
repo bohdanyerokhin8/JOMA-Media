@@ -129,6 +129,15 @@ export default function Landing() {
 
   const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>, formType: 'signIn' | 'signUp') => {
     const { name, value } = e.target;
+    
+    // Clear the specific field error when user starts typing
+    if (formType === 'signIn') {
+      setSignInErrors(prev => ({ ...prev, [name]: "" }));
+    } else {
+      setSignUpErrors(prev => ({ ...prev, [name]: "" }));
+    }
+    
+    // Only validate the current field being changed
     validateField(name, value, formType);
   };
 
@@ -219,15 +228,31 @@ export default function Landing() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    // Custom validation
-    const isEmailValid = validateField("email", email, 'signIn');
-    const isPasswordValid = validateField("password", password, 'signIn');
+    // Clear previous errors first
+    setSignInErrors({});
+    setIsLoading(true);
 
-    if (!isEmailValid || !isPasswordValid) {
+    // Validate one field at a time and show only the first error
+    if (!email) {
+      setSignInErrors({ email: "Email is required" });
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSignInErrors({ email: "Please enter a valid email address" });
+      setIsLoading(false);
+      return;
+    }
+    if (!password) {
+      setSignInErrors({ password: "Password is required" });
+      setIsLoading(false);
+      return;
+    }
+    if (password.length < 8) {
+      setSignInErrors({ password: "Password must be at least 8 characters" });
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await apiRequest("POST", "/auth/login", {
@@ -300,29 +325,51 @@ export default function Landing() {
     const firstName = formData.get("firstName") as string;
     const lastName = formData.get("lastName") as string;
 
-    // Custom validation
-    const isEmailValid = validateField("email", email, 'signUp');
-    const isPasswordValid = validateField("password", password, 'signUp');
-    const isFirstNameValid = validateField("firstName", firstName, 'signUp');
-    const isLastNameValid = validateField("lastName", lastName, 'signUp');
+    // Clear previous errors first
+    setSignUpErrors({});
+    setShowCheckboxError(false);
+    setIsLoading(true);
 
+    // Validate one field at a time and show only the first error
+    if (!email) {
+      setSignUpErrors({ email: "Email is required" });
+      setIsLoading(false);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSignUpErrors({ email: "Please enter a valid email address" });
+      setIsLoading(false);
+      return;
+    }
+    if (!password) {
+      setSignUpErrors({ password: "Password is required" });
+      setIsLoading(false);
+      return;
+    }
+    if (password.length < 8) {
+      setSignUpErrors({ password: "Password must be at least 8 characters" });
+      setIsLoading(false);
+      return;
+    }
+    if (!firstName) {
+      setSignUpErrors({ firstName: "First name is required" });
+      setIsLoading(false);
+      return;
+    }
+    if (!lastName) {
+      setSignUpErrors({ lastName: "Last name is required" });
+      setIsLoading(false);
+      return;
+    }
+    
     // Custom validation for checkbox (Radix UI checkbox uses data-state attribute)
     if (!termsCheckbox || termsCheckbox.getAttribute('data-state') !== 'checked') {
       setShowCheckboxError(true);
-      return;
-    }
-
-    if (
-      !isEmailValid ||
-      !isPasswordValid ||
-      !isFirstNameValid ||
-      !isLastNameValid
-    ) {
+      setIsLoading(false);
       return;
     }
 
     setShowCheckboxError(false);
-    setIsLoading(true);
 
     try {
       const response = await apiRequest("POST", "/auth/register", {
