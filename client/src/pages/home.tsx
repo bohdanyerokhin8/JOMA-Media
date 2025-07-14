@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 export default function Home() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -21,15 +21,15 @@ export default function Home() {
       return;
     }
     
-    // Redirect to appropriate dashboard based on user role
-    if (user) {
+    // Only redirect if we're on the root path
+    if (user && location === "/") {
       if (user.role === 'admin') {
         setLocation("/admin");
       } else {
         setLocation("/dashboard");
       }
     }
-  }, [user, isLoading, toast, setLocation]);
+  }, [user, isLoading, toast, setLocation, location]);
 
   if (isLoading) {
     return (
@@ -46,13 +46,18 @@ export default function Home() {
     return null;
   }
 
-  // This component just handles redirect logic now
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50 flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        <p className="text-gray-600">Redirecting to dashboard...</p>
+  // Only show redirect message if we're on the root path
+  if (location === "/") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-gray-600">Redirecting to dashboard...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // For non-root paths, return null (this shouldn't render anything)
+  return null;
 }
