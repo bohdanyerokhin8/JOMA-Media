@@ -30,59 +30,59 @@ function Router() {
         <>
           {/* Legacy home route - redirect to appropriate dashboard */}
           <Route path="/" component={Home} />
-          
+
           {/* Influencer routes */}
           <Route path="/dashboard">
             <DashboardLayout>
               <Dashboard />
             </DashboardLayout>
           </Route>
-          
+
           <Route path="/profile">
             <DashboardLayout>
               <ProfileSettings />
             </DashboardLayout>
           </Route>
-          
+
           <Route path="/payments">
             <DashboardLayout>
               <PaymentRequests />
             </DashboardLayout>
           </Route>
-          
+
           <Route path="/jobs">
             <DashboardLayout>
               <JobTracking />
             </DashboardLayout>
           </Route>
-          
+
           {/* Admin routes */}
-          {user?.role === 'admin' && (
+          {user?.role === "admin" && (
             <>
               <Route path="/admin">
                 <DashboardLayout>
                   <AdminDashboard />
                 </DashboardLayout>
               </Route>
-              
+
               <Route path="/admin/influencers">
                 <DashboardLayout>
                   <div>Manage Influencers (Coming Soon)</div>
                 </DashboardLayout>
               </Route>
-              
+
               <Route path="/admin/payments">
                 <DashboardLayout>
                   <div>Payment Reviews (Coming Soon)</div>
                 </DashboardLayout>
               </Route>
-              
+
               <Route path="/admin/campaigns">
                 <DashboardLayout>
                   <div>Campaign Management (Coming Soon)</div>
                 </DashboardLayout>
               </Route>
-              
+
               <Route path="/admin/invites">
                 <DashboardLayout>
                   <AdminInvites />
@@ -90,7 +90,7 @@ function Router() {
               </Route>
             </>
           )}
-          <Route component={NotFound} />
+          <Route component={Home} />
         </>
       )}
     </Switch>
