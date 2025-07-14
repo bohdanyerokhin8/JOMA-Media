@@ -25,7 +25,7 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/oauth-test" component={OAuthTest} />
-          <Route component={NotFound} />
+          <Route component={Landing} />
         </>
       ) : (
         <>
