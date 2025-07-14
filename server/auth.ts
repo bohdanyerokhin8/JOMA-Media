@@ -62,7 +62,13 @@ export async function registerUser(userData: any): Promise<AuthUser> {
 
   // Send verification email
   try {
-    const baseUrl = process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000';
+    // Handle REPLIT_DOMAINS which might contain multiple domains separated by commas
+    const domains = process.env.REPLIT_DOMAINS;
+    const primaryDomain = domains ? domains.split(',')[0].trim() : null;
+    const baseUrl = primaryDomain ? `https://${primaryDomain}` : 'http://localhost:5000';
+    
+    console.log('Sending verification email with baseUrl:', baseUrl);
+    
     await emailService.sendVerificationEmail({
       email: user.email!,
       firstName: user.firstName!,
@@ -195,7 +201,12 @@ export async function resendVerificationEmail(email: string): Promise<void> {
   await storage.updateEmailVerificationToken(user.id, verificationToken, expiresAt);
 
   // Send verification email
-  const baseUrl = process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000';
+  const domains = process.env.REPLIT_DOMAINS;
+  const primaryDomain = domains ? domains.split(',')[0].trim() : null;
+  const baseUrl = primaryDomain ? `https://${primaryDomain}` : 'http://localhost:5000';
+  
+  console.log('Sending resend verification email with baseUrl:', baseUrl);
+  
   await emailService.sendVerificationEmail({
     email: user.email!,
     firstName: user.firstName!,
@@ -223,7 +234,12 @@ export async function requestPasswordReset(email: string): Promise<void> {
   await storage.updatePasswordResetToken(user.id, resetToken, expiresAt);
 
   // Send password reset email
-  const baseUrl = process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : 'http://localhost:5000';
+  const domains = process.env.REPLIT_DOMAINS;
+  const primaryDomain = domains ? domains.split(',')[0].trim() : null;
+  const baseUrl = primaryDomain ? `https://${primaryDomain}` : 'http://localhost:5000';
+  
+  console.log('Sending password reset email with baseUrl:', baseUrl);
+  
   await emailService.sendPasswordResetEmail(user.email!, user.firstName!, resetToken, baseUrl);
 }
 
