@@ -54,6 +54,19 @@ export default function ProfileSettings() {
   // Update form when profile loads
   useEffect(() => {
     if (profile) {
+      // Calculate average engagement rate across all platforms
+      const calculateAvgEngagement = () => {
+        if (!profile.engagement) return '';
+        
+        const engagement = profile.engagement;
+        const rates = Object.values(engagement).filter(rate => rate && rate > 0);
+        
+        if (rates.length === 0) return '';
+        
+        const avgRate = rates.reduce((sum: number, rate: any) => sum + rate, 0) / rates.length;
+        return avgRate.toFixed(1);
+      };
+
       setFormData({
         instagramHandle: profile.socialLinks?.instagram || '',
         tiktokHandle: profile.socialLinks?.tiktok || '',
@@ -64,7 +77,7 @@ export default function ProfileSettings() {
         instagramFollowers: profile.followers?.instagram?.toString() || '',
         tiktokFollowers: profile.followers?.tiktok?.toString() || '',
         youtubeSubscribers: profile.followers?.youtube?.toString() || '',
-        avgEngagementRate: profile.engagement?.instagram?.toString() || '',
+        avgEngagementRate: calculateAvgEngagement(),
         location: profile.location || '',
         preferredContentTypes: Array.isArray(profile.languages) ? profile.languages.join(', ') : '',
       });
