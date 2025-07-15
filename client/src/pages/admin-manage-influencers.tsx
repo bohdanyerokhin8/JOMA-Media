@@ -406,18 +406,7 @@ export default function AdminManageInfluencers() {
                         </div>
                       )}
                       
-                      {influencerDetails.profile.languages && influencerDetails.profile.languages.length > 0 && (
-                        <div>
-                          <Label>Languages</Label>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {influencerDetails.profile.languages.map((lang: string, index: number) => (
-                              <Badge key={index} variant="outline" className="text-xs">
-                                {lang}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+
                       
                       {influencerDetails.profile.niches && influencerDetails.profile.niches.length > 0 && (
                         <div>
@@ -466,9 +455,8 @@ export default function AdminManageInfluencers() {
                             {influencerDetails.profile.engagement && Object.entries(influencerDetails.profile.engagement)
                               .filter(([platform, rate]) => rate !== null && rate !== undefined)
                               .map(([platform, rate]: [string, any]) => (
-                                <div key={platform} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                  <span className="text-sm font-medium capitalize">{platform}</span>
-                                  <span className="text-sm">{Number(rate).toFixed(1)}%</span>
+                                <div key={platform} className="flex items-center justify-center p-2 bg-gray-50 rounded">
+                                  <span className="text-sm font-medium">{Number(rate).toFixed(1)}%</span>
                                 </div>
                               ))}
                           </div>
