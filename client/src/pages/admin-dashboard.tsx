@@ -318,49 +318,7 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Recent Influencers */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Users className="h-5 w-5 mr-2" />
-            Recent Influencers
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {allInfluencers && allInfluencers.length > 0 ? (
-              allInfluencers.slice(0, 5).map((influencer: any) => (
-                <div key={influencer.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarImage src={influencer.profileImageUrl || ''} />
-                      <AvatarFallback>
-                        {getInitials(influencer.firstName, influencer.lastName)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{influencer.firstName} {influencer.lastName}</p>
-                      <p className="text-sm text-gray-600">{influencer.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant="outline">{influencer.role}</Badge>
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Profile
-                    </Button>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p>No influencers registered yet</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }
