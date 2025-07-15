@@ -14,6 +14,7 @@ import PaymentRequests from "@/pages/payment-requests";
 import JobTracking from "@/pages/job-tracking";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminInvites from "@/pages/admin-invites";
+import AdminManageInfluencers from "@/pages/admin-manage-influencers";
 import ResetPassword from "@/pages/reset-password";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 
@@ -69,7 +70,7 @@ function Router() {
 
               <Route path="/admin/influencers">
                 <DashboardLayout>
-                  <div>Manage Influencers (Coming Soon)</div>
+                  <AdminManageInfluencers />
                 </DashboardLayout>
               </Route>
 

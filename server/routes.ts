@@ -303,6 +303,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/admin/influencers/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { userId } = req.params;
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const profile = await storage.getInfluencerProfileByUser(userId);
+      res.json({ user, profile });
+    } catch (error) {
+      console.error("Error fetching influencer details:", error);
+      res.status(500).json({ message: "Failed to fetch influencer details" });
+    }
+  });
+
   app.get('/api/admin/payment-requests', isAuthenticated, async (req: any, res) => {
     try {
       if (req.user.role !== 'admin') {
