@@ -448,12 +448,14 @@ export default function AdminManageInfluencers() {
                         <div>
                           <Label>Followers</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
-                            {influencerDetails.profile.followers && Object.entries(influencerDetails.profile.followers).map(([platform, count]: [string, any]) => (
-                              <div key={platform} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span className="text-sm font-medium capitalize">{platform}</span>
-                                <span className="text-sm">{formatNumber(count)}</span>
-                              </div>
-                            ))}
+                            {influencerDetails.profile.followers && Object.entries(influencerDetails.profile.followers)
+                              .filter(([platform, count]) => count !== null && count !== undefined)
+                              .map(([platform, count]: [string, any]) => (
+                                <div key={platform} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                  <span className="text-sm font-medium capitalize">{platform}</span>
+                                  <span className="text-sm">{formatNumber(Number(count))}</span>
+                                </div>
+                              ))}
                           </div>
                         </div>
 
@@ -461,12 +463,14 @@ export default function AdminManageInfluencers() {
                         <div>
                           <Label>Engagement Rates</Label>
                           <div className="grid grid-cols-2 gap-2 mt-2">
-                            {influencerDetails.profile.engagement && Object.entries(influencerDetails.profile.engagement).map(([platform, rate]: [string, any]) => (
-                              <div key={platform} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <span className="text-sm font-medium capitalize">{platform}</span>
-                                <span className="text-sm">{rate}%</span>
-                              </div>
-                            ))}
+                            {influencerDetails.profile.engagement && Object.entries(influencerDetails.profile.engagement)
+                              .filter(([platform, rate]) => rate !== null && rate !== undefined)
+                              .map(([platform, rate]: [string, any]) => (
+                                <div key={platform} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                  <span className="text-sm font-medium capitalize">{platform}</span>
+                                  <span className="text-sm">{Number(rate).toFixed(1)}%</span>
+                                </div>
+                              ))}
                           </div>
                         </div>
                       </div>

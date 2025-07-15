@@ -156,6 +156,8 @@ export default function ProfileSettings() {
       },
       engagement: {
         instagram: formData.avgEngagementRate ? parseFloat(formData.avgEngagementRate) : null,
+        tiktok: formData.avgEngagementRate ? parseFloat(formData.avgEngagementRate) : null,
+        youtube: formData.avgEngagementRate ? parseFloat(formData.avgEngagementRate) : null,
       },
       location: formData.location || null,
       languages: formData.preferredContentTypes ? formData.preferredContentTypes.split(',').map(l => l.trim()).filter(l => l) : [],
