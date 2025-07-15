@@ -450,14 +450,12 @@ export default function AdminManageInfluencers() {
 
                         {/* Engagement */}
                         <div>
-                          <Label>Engagement Rates</Label>
-                          <div className="grid grid-cols-2 gap-2 mt-2">
+                          <div className="flex items-center gap-2">
+                            <Label>Engagement Rates</Label>
                             {influencerDetails.profile.engagement && Object.entries(influencerDetails.profile.engagement)
                               .filter(([platform, rate]) => rate !== null && rate !== undefined)
                               .map(([platform, rate]: [string, any]) => (
-                                <div key={platform} className="flex items-center justify-center p-2 bg-gray-50 rounded">
-                                  <span className="text-sm font-medium">{Number(rate).toFixed(1)}%</span>
-                                </div>
+                                <span key={platform} className="text-sm font-medium">{Number(rate).toFixed(1)}%</span>
                               ))}
                           </div>
                         </div>
