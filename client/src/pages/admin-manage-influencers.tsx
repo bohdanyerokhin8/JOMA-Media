@@ -19,7 +19,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { 
   Table,
@@ -33,7 +33,6 @@ import {
   Users, 
   Eye, 
   Search, 
-  Filter,
   MapPin,
   Link as LinkIcon,
   DollarSign,
@@ -44,30 +43,14 @@ import {
   Globe
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
 
 export default function AdminManageInfluencers() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchType, setSearchType] = useState("name");
   const [selectedInfluencer, setSelectedInfluencer] = useState<any>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  
-  // Filter states
-  const [filters, setFilters] = useState({
-    minTikTokFollowers: "",
-    maxTikTokFollowers: "",
-    minInstagramFollowers: "",
-    maxInstagramFollowers: "",
-    minYouTubeFollowers: "",
-    maxYouTubeFollowers: "",
-    minPrimaryRate: "",
-    maxPrimaryRate: "",
-    minEngagementRate: "",
-    maxEngagementRate: "",
-    nameFilter: "",
-    emailFilter: "",
-  });
 
   // Fetch all influencers
   const { data: influencers = [], isLoading } = useQuery({
@@ -94,81 +77,78 @@ export default function AdminManageInfluencers() {
     return num?.toString() || '0';
   };
 
+  const getSearchPlaceholder = (type: string) => {
+    switch (type) {
+      case "name":
+        return "Enter name to search...";
+      case "email":
+        return "Enter email to search...";
+      case "tiktok_followers":
+        return "Enter minimum TikTok followers...";
+      case "instagram_followers":
+        return "Enter minimum Instagram followers...";
+      case "youtube_followers":
+        return "Enter minimum YouTube followers...";
+      case "primary_rate":
+        return "Enter minimum primary rate...";
+      case "engagement_rate":
+        return "Enter minimum engagement rate...";
+      default:
+        return "Enter search value...";
+    }
+  };
+
   const handleViewDetails = async (influencer: any) => {
     setSelectedInfluencer(influencer);
     setIsDetailModalOpen(true);
   };
 
-  // Filter influencers based on search and filters
+  // Filter influencers based on search type and search term
   const filteredInfluencers = influencers.filter((influencer: any) => {
+    if (!searchTerm) return true;
+    
     const user = influencer.user || {};
     const followers = influencer.followers || {};
     const engagement = influencer.engagement || {};
     const rates = influencer.rates || {};
     
-    // Basic search filter
-    const matchesSearch = !searchTerm || 
-      user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Name filter
-    const matchesName = !filters.nameFilter || 
-      `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase().includes(filters.nameFilter.toLowerCase());
-
-    // Email filter
-    const matchesEmail = !filters.emailFilter || 
-      user.email?.toLowerCase().includes(filters.emailFilter.toLowerCase());
-
-    // TikTok followers filter
-    const tikTokFollowers = followers.tiktok || 0;
-    const matchesTikTokMin = !filters.minTikTokFollowers || tikTokFollowers >= parseInt(filters.minTikTokFollowers);
-    const matchesTikTokMax = !filters.maxTikTokFollowers || tikTokFollowers <= parseInt(filters.maxTikTokFollowers);
-
-    // Instagram followers filter
-    const instagramFollowers = followers.instagram || 0;
-    const matchesInstagramMin = !filters.minInstagramFollowers || instagramFollowers >= parseInt(filters.minInstagramFollowers);
-    const matchesInstagramMax = !filters.maxInstagramFollowers || instagramFollowers <= parseInt(filters.maxInstagramFollowers);
-
-    // YouTube followers filter
-    const youtubeFollowers = followers.youtube || 0;
-    const matchesYouTubeMin = !filters.minYouTubeFollowers || youtubeFollowers >= parseInt(filters.minYouTubeFollowers);
-    const matchesYouTubeMax = !filters.maxYouTubeFollowers || youtubeFollowers <= parseInt(filters.maxYouTubeFollowers);
-
-    // Primary rate filter (using post rate as primary)
-    const primaryRate = rates.post || 0;
-    const matchesPrimaryRateMin = !filters.minPrimaryRate || primaryRate >= parseInt(filters.minPrimaryRate);
-    const matchesPrimaryRateMax = !filters.maxPrimaryRate || primaryRate <= parseInt(filters.maxPrimaryRate);
-
-    // Engagement rate filter (using average engagement)
-    const avgEngagement = Object.values(engagement).reduce((sum: number, val: any) => sum + (val || 0), 0) / Object.keys(engagement).length || 0;
-    const matchesEngagementMin = !filters.minEngagementRate || avgEngagement >= parseFloat(filters.minEngagementRate);
-    const matchesEngagementMax = !filters.maxEngagementRate || avgEngagement <= parseFloat(filters.maxEngagementRate);
-
-    return matchesSearch && matchesName && matchesEmail && 
-           matchesTikTokMin && matchesTikTokMax && 
-           matchesInstagramMin && matchesInstagramMax && 
-           matchesYouTubeMin && matchesYouTubeMax && 
-           matchesPrimaryRateMin && matchesPrimaryRateMax && 
-           matchesEngagementMin && matchesEngagementMax;
+    const searchValue = searchTerm.toLowerCase();
+    
+    switch (searchType) {
+      case "name":
+        return `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase().includes(searchValue);
+      
+      case "email":
+        return user.email?.toLowerCase().includes(searchValue);
+      
+      case "tiktok_followers":
+        const tikTokFollowers = followers.tiktok || 0;
+        return tikTokFollowers >= parseInt(searchTerm) || tikTokFollowers.toString().includes(searchTerm);
+      
+      case "instagram_followers":
+        const instagramFollowers = followers.instagram || 0;
+        return instagramFollowers >= parseInt(searchTerm) || instagramFollowers.toString().includes(searchTerm);
+      
+      case "youtube_followers":
+        const youtubeFollowers = followers.youtube || 0;
+        return youtubeFollowers >= parseInt(searchTerm) || youtubeFollowers.toString().includes(searchTerm);
+      
+      case "primary_rate":
+        const primaryRate = rates.post || 0;
+        return primaryRate >= parseInt(searchTerm) || primaryRate.toString().includes(searchTerm);
+      
+      case "engagement_rate":
+        const avgEngagement = Object.values(engagement).reduce((sum: number, val: any) => sum + (val || 0), 0) / Object.keys(engagement).length || 0;
+        return avgEngagement >= parseFloat(searchTerm) || avgEngagement.toString().includes(searchTerm);
+      
+      default:
+        return true;
+    }
   });
 
-  const clearFilters = () => {
-    setFilters({
-      minTikTokFollowers: "",
-      maxTikTokFollowers: "",
-      minInstagramFollowers: "",
-      maxInstagramFollowers: "",
-      minYouTubeFollowers: "",
-      maxYouTubeFollowers: "",
-      minPrimaryRate: "",
-      maxPrimaryRate: "",
-      minEngagementRate: "",
-      maxEngagementRate: "",
-      nameFilter: "",
-      emailFilter: "",
-    });
+  const clearSearch = () => {
     setSearchTerm("");
+    setSearchType("name");
   };
 
   if (isLoading) {
@@ -195,147 +175,53 @@ export default function AdminManageInfluencers() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
-            <Filter className="h-5 w-5 mr-2" />
-            Search & Filters
+            <Search className="h-5 w-5 mr-2" />
+            Search Influencers
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {/* Basic Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search Type Dropdown */}
+            <div className="w-full md:w-64">
+              <Label htmlFor="search-type">Search By</Label>
+              <Select value={searchType} onValueChange={setSearchType}>
+                <SelectTrigger id="search-type">
+                  <SelectValue placeholder="Select search type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="tiktok_followers">TikTok Followers</SelectItem>
+                  <SelectItem value="instagram_followers">Instagram Followers</SelectItem>
+                  <SelectItem value="youtube_followers">YouTube Followers</SelectItem>
+                  <SelectItem value="primary_rate">Primary Rate</SelectItem>
+                  <SelectItem value="engagement_rate">Engagement Rate</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Name Filter */}
-            <div>
-              <Label htmlFor="name-filter">Name</Label>
-              <Input
-                id="name-filter"
-                placeholder="Filter by name..."
-                value={filters.nameFilter}
-                onChange={(e) => setFilters({...filters, nameFilter: e.target.value})}
-              />
-            </div>
-
-            {/* Email Filter */}
-            <div>
-              <Label htmlFor="email-filter">Email</Label>
-              <Input
-                id="email-filter"
-                placeholder="Filter by email..."
-                value={filters.emailFilter}
-                onChange={(e) => setFilters({...filters, emailFilter: e.target.value})}
-              />
-            </div>
-
-            {/* TikTok Followers Range */}
-            <div>
-              <Label>TikTok Followers</Label>
-              <div className="flex space-x-2">
+            {/* Search Input */}
+            <div className="flex-1">
+              <Label htmlFor="search-input">Search Value</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filters.minTikTokFollowers}
-                  onChange={(e) => setFilters({...filters, minTikTokFollowers: e.target.value})}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filters.maxTikTokFollowers}
-                  onChange={(e) => setFilters({...filters, maxTikTokFollowers: e.target.value})}
+                  id="search-input"
+                  placeholder={getSearchPlaceholder(searchType)}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  type={searchType.includes('followers') || searchType.includes('rate') ? 'number' : 'text'}
                 />
               </div>
             </div>
 
-            {/* Instagram Followers Range */}
-            <div>
-              <Label>Instagram Followers</Label>
-              <div className="flex space-x-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filters.minInstagramFollowers}
-                  onChange={(e) => setFilters({...filters, minInstagramFollowers: e.target.value})}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filters.maxInstagramFollowers}
-                  onChange={(e) => setFilters({...filters, maxInstagramFollowers: e.target.value})}
-                />
-              </div>
+            {/* Clear Search Button */}
+            <div className="flex items-end">
+              <Button variant="outline" onClick={clearSearch}>
+                Clear Search
+              </Button>
             </div>
-
-            {/* YouTube Followers Range */}
-            <div>
-              <Label>YouTube Followers</Label>
-              <div className="flex space-x-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filters.minYouTubeFollowers}
-                  onChange={(e) => setFilters({...filters, minYouTubeFollowers: e.target.value})}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filters.maxYouTubeFollowers}
-                  onChange={(e) => setFilters({...filters, maxYouTubeFollowers: e.target.value})}
-                />
-              </div>
-            </div>
-
-            {/* Primary Rate Range */}
-            <div>
-              <Label>Primary Rate ($)</Label>
-              <div className="flex space-x-2">
-                <Input
-                  type="number"
-                  placeholder="Min"
-                  value={filters.minPrimaryRate}
-                  onChange={(e) => setFilters({...filters, minPrimaryRate: e.target.value})}
-                />
-                <Input
-                  type="number"
-                  placeholder="Max"
-                  value={filters.maxPrimaryRate}
-                  onChange={(e) => setFilters({...filters, maxPrimaryRate: e.target.value})}
-                />
-              </div>
-            </div>
-
-            {/* Engagement Rate Range */}
-            <div>
-              <Label>Engagement Rate (%)</Label>
-              <div className="flex space-x-2">
-                <Input
-                  type="number"
-                  step="0.1"
-                  placeholder="Min"
-                  value={filters.minEngagementRate}
-                  onChange={(e) => setFilters({...filters, minEngagementRate: e.target.value})}
-                />
-                <Input
-                  type="number"
-                  step="0.1"
-                  placeholder="Max"
-                  value={filters.maxEngagementRate}
-                  onChange={(e) => setFilters({...filters, maxEngagementRate: e.target.value})}
-                />
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-4 flex justify-end">
-            <Button variant="outline" onClick={clearFilters}>
-              Clear All Filters
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -454,6 +340,9 @@ export default function AdminManageInfluencers() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Influencer Profile Details</DialogTitle>
+            <DialogDescription>
+              Complete profile information for the selected influencer
+            </DialogDescription>
           </DialogHeader>
           
           {isDetailLoading ? (
