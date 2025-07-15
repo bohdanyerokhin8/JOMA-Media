@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
-import { handleGoogleOAuth, loginUser, createSessionUser } from "./auth";
+import { handleGoogleOAuthSignIn, handleGoogleOAuthSignUp, loginUser, createSessionUser } from "./auth";
 import type { Express } from "express";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -72,11 +72,22 @@ export function setupPassport(app: Express) {
     passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: callbackURL
-    }, async (accessToken, refreshToken, profile, done) => {
+      callbackURL: callbackURL,
+      passReqToCallback: true
+    }, async (req, accessToken, refreshToken, profile, done) => {
       try {
         console.log('Google OAuth profile received:', profile.displayName);
-        const user = await handleGoogleOAuth(profile._json);
+        
+        // Check the state parameter to determine if it's sign-in or sign-up
+        const isSignUp = req.query.state === 'signup';
+        
+        let user;
+        if (isSignUp) {
+          user = await handleGoogleOAuthSignUp(profile._json);
+        } else {
+          user = await handleGoogleOAuthSignIn(profile._json);
+        }
+        
         return done(null, createSessionUser(user));
       } catch (error) {
         console.error('Google OAuth error:', error);
@@ -103,19 +114,50 @@ export function setupPassport(app: Express) {
 
 // Auth routes
 export function setupAuthRoutes(app: Express) {
-  // Google OAuth routes
-  app.get('/auth/google',
+  // Google OAuth routes - Sign In
+  app.get('/auth/google/signin',
     passport.authenticate('google', { 
       scope: ['profile', 'email'],
-      prompt: 'select_account'
+      prompt: 'select_account',
+      state: 'signin'
+    })
+  );
+
+  // Google OAuth routes - Sign Up
+  app.get('/auth/google/signup',
+    passport.authenticate('google', { 
+      scope: ['profile', 'email'],
+      prompt: 'select_account',
+      state: 'signup'
     })
   );
 
   app.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/?error=auth_failed' }),
-    (req, res) => {
-      // Successful authentication
-      res.redirect('/');
+    (req, res, next) => {
+      passport.authenticate('google', (err, user, info) => {
+        if (err) {
+          console.error('Google OAuth error:', err);
+          // Check if it's a sign-up related error
+          if (err.message === 'Please sign up first') {
+            return res.redirect('/?error=signup_required');
+          } else if (err.message === 'Account already exists with this email') {
+            return res.redirect('/?error=account_exists');
+          }
+          return res.redirect('/?error=auth_failed');
+        }
+        
+        if (!user) {
+          return res.redirect('/?error=auth_failed');
+        }
+        
+        req.logIn(user, (err) => {
+          if (err) {
+            console.error('Login error:', err);
+            return res.redirect('/?error=auth_failed');
+          }
+          return res.redirect('/');
+        });
+      })(req, res, next);
     }
   );
 

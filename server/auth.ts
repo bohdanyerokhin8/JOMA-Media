@@ -270,39 +270,83 @@ export async function resetPassword(token: string, newPassword: string): Promise
   };
 }
 
-// Google OAuth Authentication
-export async function handleGoogleOAuth(googleProfile: any): Promise<AuthUser> {
+// Google OAuth Authentication - Sign In
+export async function handleGoogleOAuthSignIn(googleProfile: any): Promise<AuthUser> {
   const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profileImageUrl } = googleProfile;
   
-  // Check if user exists by Google ID
+  // Check if user exists by email
   let user = await storage.getUserByEmail(email);
   
-  if (user) {
-    // Update existing user with Google info if needed
-    if (user.authProvider === "email") {
-      // User registered with email/password, now linking Google
-      user = await storage.upsertUser({
-        ...user,
-        googleId,
-        authProvider: "google",
-        profileImageUrl: profileImageUrl || user.profileImageUrl,
-        updatedAt: new Date(),
-      });
-    }
-  } else {
-    // Create new user from Google profile
-    user = await storage.createUser({
-      email,
-      firstName: firstName || "",
-      lastName: lastName || "",
-      role: "influencer",
-      hashedPassword: null,
-      authProvider: "google",
+  if (!user) {
+    // User doesn't exist, require sign-up first
+    throw new Error("Please sign up first");
+  }
+
+  // User exists, check if they can sign in with Google
+  if (user.authProvider === "email") {
+    // User registered with email/password, now linking Google
+    user = await storage.upsertUser({
+      ...user,
       googleId,
-      profileImageUrl,
-      isActive: true,
-      emailVerified: true, // Google accounts are pre-verified
+      authProvider: "google",
+      profileImageUrl: profileImageUrl || user.profileImageUrl,
+      updatedAt: new Date(),
     });
+  } else if (user.authProvider === "google") {
+    // Update existing Google user info
+    user = await storage.upsertUser({
+      ...user,
+      googleId,
+      profileImageUrl: profileImageUrl || user.profileImageUrl,
+      updatedAt: new Date(),
+    });
+  }
+
+  return {
+    id: user.id,
+    email: user.email!,
+    firstName: user.firstName!,
+    lastName: user.lastName!,
+    role: user.role!,
+    authProvider: user.authProvider!,
+  };
+}
+
+// Google OAuth Authentication - Sign Up
+export async function handleGoogleOAuthSignUp(googleProfile: any): Promise<AuthUser> {
+  const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profileImageUrl } = googleProfile;
+  
+  // Check if user already exists
+  const existingUser = await storage.getUserByEmail(email);
+  if (existingUser) {
+    throw new Error("Account already exists with this email");
+  }
+
+  // Check for admin invite
+  const adminInvite = await storage.getAdminInviteByEmail(email);
+  let userRole = "influencer";
+  
+  if (adminInvite) {
+    userRole = "admin";
+  }
+
+  // Create new user from Google profile
+  const user = await storage.createUser({
+    email,
+    firstName: firstName || "",
+    lastName: lastName || "",
+    role: userRole,
+    hashedPassword: null,
+    authProvider: "google",
+    googleId,
+    profileImageUrl,
+    isActive: true,
+    emailVerified: true, // Google accounts are pre-verified
+  });
+
+  // If this was an admin invite, update the invite status
+  if (adminInvite && userRole === "admin") {
+    await storage.updateAdminInviteStatus(adminInvite.id, "accepted");
   }
 
   return {

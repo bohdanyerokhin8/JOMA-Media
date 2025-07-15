@@ -48,11 +48,12 @@ export default function Landing() {
 
   const { toast } = useToast();
 
-  // Check URL parameters for verification status
+  // Check URL parameters for verification status and Google OAuth errors
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const verification = urlParams.get('verification');
     const message = urlParams.get('message');
+    const error = urlParams.get('error');
     
     if (verification === 'error' && message) {
       setVerificationMessage({
@@ -62,11 +63,41 @@ export default function Landing() {
       setShowResendSection(true);
     }
     
+    // Handle Google OAuth errors
+    if (error) {
+      switch (error) {
+        case 'signup_required':
+          toast({
+            title: "⚠️ Sign up required",
+            description: "Please sign up first before using Google sign-in.",
+            variant: "destructive",
+            duration: 6000,
+          });
+          break;
+        case 'account_exists':
+          toast({
+            title: "⚠️ Account already exists",
+            description: "An account with this email already exists. Please use sign-in instead.",
+            variant: "destructive",
+            duration: 6000,
+          });
+          break;
+        case 'auth_failed':
+          toast({
+            title: "❌ Authentication failed",
+            description: "Google authentication failed. Please try again.",
+            variant: "destructive",
+            duration: 6000,
+          });
+          break;
+      }
+    }
+    
     // Clean up URL parameters
-    if (verification) {
+    if (verification || error) {
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, []);
+  }, [toast]);
 
   // Custom validation component
   const ValidationError = ({
@@ -184,7 +215,7 @@ export default function Landing() {
     };
   }, []);
 
-  const handleGoogleAuth = () => {
+  const handleGoogleAuth = (action: 'signin' | 'signup') => {
     setIsLoading(true);
 
     // Set a timeout to clear loading state if user doesn't complete OAuth flow
@@ -201,6 +232,9 @@ export default function Landing() {
     // Store timeout ID so we can clear it if user returns
     window.googleAuthTimeout = loadingTimeout;
 
+    // Use different endpoints for sign-in vs sign-up
+    const googleUrl = action === 'signin' ? '/auth/google/signin' : '/auth/google/signup';
+
     // Try to open in new tab first to bypass iframe restrictions
     try {
       // Check if we're in an iframe
@@ -208,14 +242,14 @@ export default function Landing() {
 
       if (isInIframe) {
         // Open in new tab to bypass iframe restrictions
-        window.open("/auth/google", "_blank");
+        window.open(googleUrl, "_blank");
       } else {
         // Direct navigation
-        window.location.href = "/auth/google";
+        window.location.href = googleUrl;
       }
     } catch (error) {
       // Fallback to direct navigation
-      window.location.href = "/auth/google";
+      window.location.href = googleUrl;
     }
   };
 
@@ -605,7 +639,7 @@ export default function Landing() {
                   </div>
 
                   <Button
-                    onClick={handleGoogleAuth}
+                    onClick={() => handleGoogleAuth('signin')}
                     className="w-full flex items-center justify-center py-3 px-4 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg transition-all duration-200"
                   >
                     <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -740,7 +774,7 @@ export default function Landing() {
                   </div>
 
                   <Button
-                    onClick={handleGoogleAuth}
+                    onClick={() => handleGoogleAuth('signup')}
                     className="w-full flex items-center justify-center py-3 px-4 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg transition-all duration-200"
                   >
                     <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">

@@ -6,6 +6,7 @@ This is a boutique influencer management platform built for JOMA Media, designed
 
 ## Recent Changes
 
+- **Enhanced Google OAuth Authentication Flow (Jan 2025)**: Implemented proper sign-in vs sign-up validation - users must sign up first before using Google sign-in, prevents duplicate accounts, shows appropriate error messages ("Please sign up first" for sign-in attempts without account, "Account already exists" for duplicate sign-ups), separate endpoints for /auth/google/signin and /auth/google/signup
 - **Admin Influencer Management System (Jan 2025)**: Built comprehensive influencer management page with simplified two-box search interface - admins can filter by search type (name, email, TikTok followers, Instagram followers, YouTube followers, primary rate, engagement rate) and search value, includes table view with social stats and detailed profile modal
 - **Improved Form Validation UX (Jan 2025)**: Updated Sign In and Sign Up forms to show only one error at a time instead of all errors simultaneously - Sign In validates email → password, Sign Up validates firstName → lastName → email → password → terms for better user experience
 - **Fixed Password Reset Dashboard Redirect (Jan 2025)**: Enhanced password reset flow to properly handle authentication state after password reset - added cache invalidation, authentication verification, and improved redirect timing to ensure dashboard loads correctly
